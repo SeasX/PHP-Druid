@@ -1,0 +1,10 @@
+// $Id: config.w32 765 2016-12-13 21:00:00Z neeke $
+// vim:ft=javascript
+
+ARG_ENABLE("druid", "enable druid support", "no");
+
+if (PHP_druid != "no") {
+	EXTENSION("druid", "druid.c");
+
+	AC_DEFINE("HAVE_druid", 1, "Have druid Support");
+}

@@ -1,0 +1,10 @@
+PHP-Druid
+
+Lead:
+    Neeke       ( neeke@php.net )
+
+Dev:
+    Neeke       ( neeke@php.net )
+
+QA:
+    Neeke       ( neeke@php.net )
