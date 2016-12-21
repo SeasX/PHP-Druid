@@ -4,10 +4,11 @@
          xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
     <name>PHP-Druid</name>
     <channel>pecl.php.net</channel>
-    <summary>A Druid REST Client extension for PHP.</summary>
+    <summary>A Druid driver for PHP with PECL extension.</summary>
     <description>
-        A Druid REST Client extension for PHP.
-        -
+        A Druid driver for PHP with PECL extension.
+        - Build Druid REST Client Use CURL.
+        - Request both with Full-Json or Templates-Json
     </description>
     <lead>
         <name>Chitao Gao</name>
@@ -15,8 +16,8 @@
         <email>neeke@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2016-10-17</date>
-    <time>15:00:00</time>
+    <date>2016-12-21</date>
+    <time>22:35:00</time>
     <version>
         <release>0.3.0</release>
         <api>0.3.0</api>
@@ -27,6 +28,7 @@
     </stability>
     <license uri="http://www.apache.org/licenses/LICENSE-2.0.html">Apache2.0</license>
     <notes>
+        - First version for pecl.net
         - Support PHP 5.*.
     </notes>
     <contents>
@@ -79,7 +81,10 @@
                 <api>beta</api>
             </stability>
             <license uri="http://www.apache.org/licenses/LICENSE-2.0.html">Apache2.0</license>
-            <notes>- First version for pecl.net</notes>
+            <notes>
+                - First version for pecl.net
+                - Support PHP 5.*.
+            </notes>
         </release>
     </changelog>
 </package>
