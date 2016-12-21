@@ -240,7 +240,6 @@ PHP_METHOD(DRUID_NAME, __construct)
 
 PHP_METHOD(DRUID_NAME,__destruct)
 {
-    php_printf("__destruct   \n");
     zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), ZEND_ACC_PROTECTED TSRMLS_CC);
     zend_update_static_property_null(druid_ce, ZEND_STRL(DRUID_NAME) TSRMLS_CC);
 }
