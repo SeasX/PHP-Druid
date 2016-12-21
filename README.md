@@ -10,6 +10,7 @@ A Druid driver for PHP with PECL extension
 
     Druid.ini
     
+    extension=druid.so
     druid.base_auth_passport = ""
     druid.base_auth_user = ""
     druid.debug = 1
