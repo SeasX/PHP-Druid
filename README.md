@@ -3,7 +3,17 @@ A Druid driver for PHP with PECL extension
 
 ## Install
 
-    pecl install Druid
+### Make Install PHP-Druid
+```sh
+$ /path/to/phpize
+$ ./configure --with-php-config=/path/to/php-config
+$ make && make install
+```
+
+### PECL Install PHP-Druid
+```sh
+$ pecl install Druid
+```
     
 
 ## Config
