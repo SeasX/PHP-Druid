@@ -9,6 +9,9 @@ try {
     $Druid = Druid::getInstance();
     $Druid->debugWitch(TRUE);
 
+    /**
+     * you can also use default host with druid.host in php.ini/druid.ini
+     */
     $aHosts = array("http://10.0.3.46:9082/druid/v2/", "http://10.0.3.46:9082/druid/v2/");
     $Druid->setDruidHosts($aHosts);
 
