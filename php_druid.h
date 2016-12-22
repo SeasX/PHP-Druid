@@ -19,6 +19,10 @@
 #ifndef PHP_DRUID_H
 #define PHP_DRUID_H
 
+#define DRUID_NAME "Druid"
+#define DRUID_CREDITS "neeke@php.net"
+#define PHP_DRUID_VERSION "0.4.0"
+
 #define DRUID_CONTENT_TYPE                  "Content-Type:application/json"
 #define DRUID_PROPERTY_CURL_ERR_NO          "_curl_error_no"
 #define DRUID_PROPERTY_CURL_ERR_STR         "_curl_error_str"
@@ -26,15 +30,13 @@
 #define DRUID_PROPERTY_RESPONSE_CODE        "response_code"
 #define DRUID_PROPERTY_RESPONSE_INFO        "response_debug_info"
 
+#define DRUID_PROPERTY_TPL_PATH             "tpl_path"
+
 #define DRUID_PROPERTY_HOSTS                "hosts"
 #define DRUID_PROPERTY_HOST_RAND            "host_rand"
 #define DRUID_PROPERTY_HOST_RAND_BAR        (double)0.5
 
 #define DRUID_RESPONSE_CODE_ERROR_BAR       399
-
-#define DRUID_NAME "Druid"
-#define DRUID_CREDITS "neeke@php.net"
-#define PHP_DRUID_VERSION "0.3.0"
 
 extern zend_module_entry druid_module_entry;
 #define phpext_druid_ptr &druid_module_entry

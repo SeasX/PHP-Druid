@@ -40,8 +40,8 @@
 #define DRUID_ADD_INDEX_STRINGL(z, i, s, l) add_index_stringl(&z, i, s, l)
 #define DRUID_ADD_INDEX_LONG(z, i, l) add_index_long(&z, i, l)
 #define DRUID_ADD_INDEX_ZVAL(z, i, zn) add_index_zval(&z, i, &zn)
-#define DRUID_ADD_ASSOC_LONG_EX(z, s, l, v) add_assoc_long_ex(z, s, l, (long) v)
-#define DRUID_ADD_ASSOC_DOUBLE_EX(z, s, l, v) add_assoc_double_ex(z, s, l, (double) v)
+#define DRUID_ADD_ASSOC_LONG_EX(z, s, l, v) add_assoc_long_ex(&z, s, l, (long) v)
+#define DRUID_ADD_ASSOC_DOUBLE_EX(z, s, l, v) add_assoc_double_ex(&z, s, l, (double) v)
 #define DRUID_ADD_ASSOC_ZVAL_EX(z, s, l, zn) add_assoc_zval_ex(z, s, l, zn)
 #define DRUID_ADD_ASSOC_STRING_EX(a, k, l, s) add_assoc_string_ex(&a, k, l, s)
 #define DRUID_ADD_NEXT_INDEX_STRING(a, s) add_next_index_string(a, s)
@@ -49,6 +49,9 @@
 #define DRUID_ZEND_HASH_GET_CURRENT_KEY(ht, key, idx) zend_hash_get_current_key(ht, key, idx)
 #define DRUID_ZEND_HASH_INDEX_UPDATE(ht, h, pData, nDataSize, pDest)  zend_hash_index_update_ptr(ht, h, pData)
 
+#define DRUID_ZEND_READ_PROPERTY(ce,z,zl) zend_read_property(ce, z, zl, 1, NULL)
+#define DRUID_ZEND_UPDATE_PROPERTY(ce,z,zl,zn) zend_update_property(ce, z, zl, zn)
+#define DRUID_ZEND_UPDATE_PROPERTY_LONG(ce,z,zl,zn) zend_update_property_long(ce,z,zl,zn)
 #else
 
 #define DRUID_ZVAL_STRING(z, s) ZVAL_STRING(z, s, 1)
@@ -66,6 +69,9 @@
 #define DRUID_ZEND_HASH_GET_CURRENT_KEY(ht, key, idx) zend_hash_get_current_key(ht, key, idx, 0)
 #define DRUID_ZEND_HASH_INDEX_UPDATE(ht, h, pData, nDataSize, pDest)  zend_hash_index_update(ht, h, pData, nDataSize, pDest)
 
+#define DRUID_ZEND_READ_PROPERTY(ce,z,zl) zend_read_property(ce, z, zl, 1 TSRMLS_CC)
+#define DRUID_ZEND_UPDATE_PROPERTY(ce,z,zl,zn) zend_update_property(ce, z, zl, zn TSRMLS_CC)
+#define DRUID_ZEND_UPDATE_PROPERTY_LONG(ce,z,zl,zn) zend_update_property_long(ce,z,zl,zn TSRMLS_CC)
 #endif
 
 
@@ -158,6 +164,8 @@ PHP_MINIT_FUNCTION(druid)
 
     zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_NAME), ZEND_ACC_STATIC | ZEND_ACC_PROTECTED TSRMLS_CC);
 
+    zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_PROPERTY_TPL_PATH), ZEND_ACC_PROTECTED TSRMLS_CC);
+
     zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), ZEND_ACC_PROTECTED TSRMLS_CC);
     zend_declare_property_long(druid_ce, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE),0, ZEND_ACC_PROTECTED TSRMLS_CC);
 
@@ -215,13 +223,20 @@ PHP_METHOD(DRUID_NAME, getInstance)
     }
     else
     {
+#if PHP_VERSION_ID >= 70000
+
+#else
         MAKE_STD_ZVAL(instance);
+#endif
+
         object_init_ex(instance, druid_ce);
 
-        zend_update_property_long(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO), 0 TSRMLS_CC);
+        DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO), 0);
         zend_update_property_string(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_STR), "" TSRMLS_CC);
 
-        zend_update_property_long(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE), 0 TSRMLS_CC);
+        zend_update_property_string(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_TPL_PATH), DRUID_G(tpl_path) TSRMLS_CC);
+
+        DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE), 0);
         zend_update_property_null(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO) TSRMLS_CC);
 
         zend_update_property_null(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_HOSTS) TSRMLS_CC);
@@ -240,6 +255,11 @@ PHP_METHOD(DRUID_NAME, __construct)
 
 PHP_METHOD(DRUID_NAME,__destruct)
 {
+    zend_update_property_null(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO) TSRMLS_CC);
+    zend_update_property_null(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH) TSRMLS_CC);
+    zend_update_property_null(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_HOSTS) TSRMLS_CC);
+
+    zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_PROPERTY_TPL_PATH),ZEND_ACC_PROTECTED TSRMLS_CC);
     zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), ZEND_ACC_PROTECTED TSRMLS_CC);
     zend_update_static_property_null(druid_ce, ZEND_STRL(DRUID_NAME) TSRMLS_CC);
 }
@@ -271,10 +291,9 @@ PHP_METHOD(DRUID_NAME, debugWitch)
 PHP_METHOD(DRUID_NAME, setDruidHosts)
 {
     int argc = ZEND_NUM_ARGS();
-
     zval *hosts;
 
-    if (zend_parse_parameters(argc TSRMLS_CC, "a", &hosts) == FAILURE)
+    if (zend_parse_parameters(argc TSRMLS_CC, "z", &hosts) == FAILURE)
     {
         RETURN_FALSE;
     }
@@ -285,7 +304,7 @@ PHP_METHOD(DRUID_NAME, setDruidHosts)
         RETURN_FALSE;
     }
 
-	zend_update_property(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_HOSTS), hosts TSRMLS_CC);
+	DRUID_ZEND_UPDATE_PROPERTY(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_HOSTS), hosts);
 	zend_update_property_bool(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_HOST_RAND), 1 TSRMLS_CC);
 
     RETURN_TRUE;
@@ -297,12 +316,12 @@ PHP_METHOD(DRUID_NAME, setTplPath)
 
     zend_string *tpl_path;
 
-    if (zend_parse_parameters(argc TSRMLS_CC, "S", &tpl_path) == FAILURE)
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "S", &tpl_path) == FAILURE)
     {
        RETURN_FALSE;
     }
 
-    DRUID_G(tpl_path) = estrdup(ZSTR_VAL(tpl_path));
+    zend_update_property_stringl(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH), ZSTR_VAL(tpl_path), ZSTR_LEN(tpl_path));
 
     RETURN_TRUE;
 
@@ -314,7 +333,7 @@ PHP_METHOD(DRUID_NAME, setTplPath)
         RETURN_FALSE;
     }
 
-    DRUID_G(tpl_path) = estrdup(tpl_path);
+    zend_update_property_string(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH), tpl_path TSRMLS_CC);
 
     RETURN_TRUE;
 
@@ -523,7 +542,7 @@ PHP_METHOD(DRUID_NAME,getData)
     int  request_len;
     zval **content;
 
-    if (zend_parse_parameters(argc TSRMLS_CC, "s|Z", &request, &request_len, &content) == FAILURE)
+    if (zend_parse_parameters(argc TSRMLS_CC, "s|z", &request, &request_len, &content) == FAILURE)
     {
         RETURN_FALSE;
     }
@@ -553,7 +572,7 @@ PHP_METHOD(DRUID_NAME,getData)
     }
     else
     {
-        RETURN_ZVAL( result,1,0);
+        RETURN_ZVAL(result,1,0);
     }
 }
 
@@ -564,8 +583,27 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
     zval *result;
     char *tpl,*request,*request_json,*filename;
     int  tpl_len,filename_len;
-    zval **content;
+    zval *tpl_path;
 
+#if PHP_VERSION_ID >= 70000
+    zend_string *tpl_tmp;
+    zval *content;
+
+    if (zend_parse_parameters(argc TSRMLS_CC, "S|z", &tpl_tmp, &content) == FAILURE)
+    {
+        RETURN_FALSE;
+    }
+
+    if (argc > 1 && Z_TYPE_P(content) != IS_ARRAY)
+    {
+        php_error_docref(NULL TSRMLS_CC, E_WARNING, "The second argument is not an array");
+        RETURN_FALSE;
+    }
+    tpl = ZSTR_VAL(tpl_tmp);
+    tpl_len = ZSTR_LEN(tpl_tmp);
+
+#else
+    zval **content;
     if (zend_parse_parameters(argc TSRMLS_CC, "s|Z", &tpl, &tpl_len, &content) == FAILURE)
     {
         RETURN_FALSE;
@@ -577,12 +615,21 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
         RETURN_FALSE;
     }
 
-    filename_len = spprintf(&filename, 0, "%s/%s", DRUID_G(tpl_path),tpl);
+#endif
+
+    tpl_path = DRUID_ZEND_READ_PROPERTY(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH));
+
+    filename_len = spprintf(&filename, 0, "%s/%s", Z_STRVAL_P(tpl_path),tpl);
     request = druid_file_get_contents_by_tpl(filename TSRMLS_CC);
+    efree(filename);
 
     if (argc > 1)
     {
-        request_json = php_strtr_array(request,strlen(request),HASH_OF(*content));
+#if PHP_VERSION_ID >= 70000
+    request_json = php_strtr_array(request,strlen(request),HASH_OF(content));
+#else
+    request_json = php_strtr_array(request,strlen(request),HASH_OF(*content));
+#endif
     }
     else
     {
@@ -591,7 +638,8 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
 
     zval *druid = zend_read_static_property(druid_ce, ZEND_STRL(DRUID_NAME), 1 TSRMLS_CC);
 
-    result = druid_getApi(druid,request_json TSRMLS_CC);         //CURL查询
+    result = druid_getApi(druid,request_json TSRMLS_CC);
+    efree(request_json);
 
     if (result == NULL)
     {
@@ -599,24 +647,29 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
     }
     else
     {
-        RETURN_ZVAL( result,1,0);
+        RETURN_ZVAL(result,1,1);
     }
 }
 
 PHP_METHOD(DRUID_NAME,getDebugInfo)
 {
-    zval *info = zend_read_property(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), 1 TSRMLS_CC);
+    zval *info = DRUID_ZEND_READ_PROPERTY(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO));
     RETVAL_ZVAL(info, 1, 0);
 }
 
 
 char *druid_file_get_contents_by_tpl(char *filename TSRMLS_DC)
 {
-    char *contents;
     php_stream *stream;
-    int len;
     zval *zcontext = NULL;
     php_stream_context *context = NULL;
+
+#if PHP_VERSION_ID >= 70000
+    zend_string *contents;
+#else
+    char *contents;
+    int len;
+#endif
 
     context = php_stream_context_from_zval(zcontext, 0);
 
@@ -625,11 +678,20 @@ char *druid_file_get_contents_by_tpl(char *filename TSRMLS_DC)
         return "";
     }
 
+#if PHP_VERSION_ID >= 70000
+    if ((contents = php_stream_copy_to_mem(stream, PHP_STREAM_COPY_ALL, 0)) != NULL) {
+        php_stream_close(stream);
+        return ZSTR_VAL(contents);
+#else
     if ((len = php_stream_copy_to_mem(stream, &contents, PHP_STREAM_COPY_ALL, 0)) > 0) {
+        php_stream_close(stream);
         return contents;
     } else if (len == 0) {
+        php_stream_close(stream);
         return "";
+#endif
     } else {
+        php_stream_close(stream);
         return "";
     }
 
@@ -640,24 +702,32 @@ static zval *druid_getApi(zval *druid, char *request_json TSRMLS_DC)
 {
     zval *err_str,*err_no;
     zval *response_code;
+#if PHP_VERSION_ID >= 70000
+    zval *resultZval;
+
+#else
     zval *resultZval;
     MAKE_STD_ZVAL(resultZval);
+
+#endif
 
     struct druidCurlResult curlResult;
 
     if(druid_get_contents(druid,request_json,&curlResult TSRMLS_CC) != SUCCESS)
     {
-        err_str = zend_read_property(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_STR), 1 TSRMLS_CC);
-        err_no = zend_read_property(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO), 1 TSRMLS_CC);
+        err_str = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_STR));
+        err_no = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO));
 
+        free(curlResult.memory);
         zend_throw_exception(php_com_exception_class_entry,Z_STRVAL_P(err_str),Z_LVAL_P(err_no) TSRMLS_CC);
         return NULL;
     }
 
-    response_code = zend_read_property(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE), 1 TSRMLS_CC);
+    response_code = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE));
     if (Z_LVAL_P(response_code) > DRUID_RESPONSE_CODE_ERROR_BAR)
     {
         zend_throw_exception(php_com_exception_class_entry,curlResult.memory,Z_LVAL_P(response_code) TSRMLS_CC);
+        free(curlResult.memory);
         return NULL;
     }
 
@@ -701,7 +771,7 @@ int druid_php_rand(TSRMLS_D)
 char *druid_get_host(zval *druid TSRMLS_DC)
 {
     zval *host_rand,*hosts;
-    host_rand = zend_read_property(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOST_RAND), 1 TSRMLS_CC);
+    host_rand = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOST_RAND));
 
 #if PHP_VERSION_ID >= 70000
 
@@ -709,23 +779,28 @@ char *druid_get_host(zval *druid TSRMLS_DC)
     zend_string *str_key;
     zval *entry;
 
-    if (Z_LVAL_P(host_rand) == 1)
+    if (Z_TYPE_P(host_rand) == IS_TRUE)
     {
-        ZEND_HASH_FOREACH_KEY_VAL(pats, num_key, str_key, entry)
+        hosts = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOSTS));
+
+        ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(hosts), num_key, str_key, entry)
         {
             if (UNEXPECTED(!str_key))
-            {
-
-            }
-            else
             {
                 zend_string *s = zval_get_string(entry);
 
                 if (druid_php_rand(TSRMLS_C) == SUCCESS)
                 {
-                    return ZSTR_VAL(str_key);
+                    return ZSTR_VAL(s);
                 }
-                zend_string_release(s);
+                else
+                {
+                    zend_string_release(s);
+                }
+            }
+            else
+            {
+
             }
         }
         ZEND_HASH_FOREACH_END();
@@ -735,7 +810,7 @@ char *druid_get_host(zval *druid TSRMLS_DC)
 
     if (Z_LVAL_P(host_rand) == 1) {
 
-        hosts = zend_read_property(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOSTS), 1 TSRMLS_CC);
+        hosts = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOSTS));
 
         zval **entry;
         HashPosition pos;
@@ -765,9 +840,18 @@ int druid_get_debug_info(zval *druid,CURL *curl_handle,char *request_json TSRMLS
     long    l_code;
     double  d_code;
 
+#if PHP_VERSION_ID >= 70000
+
+    zval debug_info;
+    array_init(&debug_info);
+
+#else
+
     zval *debug_info;
     MAKE_STD_ZVAL(debug_info);
     array_init(debug_info);
+
+#endif
 
     if (curl_easy_getinfo(curl_handle, CURLINFO_EFFECTIVE_URL, &s_code) == CURLE_OK) {
         DRUID_ADD_ASSOC_STRING_EX(debug_info,"url",4,s_code);
@@ -847,8 +931,13 @@ int druid_get_debug_info(zval *druid,CURL *curl_handle,char *request_json TSRMLS
     }
 
     DRUID_ADD_ASSOC_STRING_EX(debug_info,"request_json",13,request_json);
+#if PHP_VERSION_ID >= 70000
+    DRUID_ZEND_UPDATE_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), &debug_info);
+#else
+    DRUID_ZEND_UPDATE_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), debug_info);
+#endif
 
-    zend_update_property(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), debug_info TSRMLS_CC);
+    zval_ptr_dtor(&debug_info);
 
     return SUCCESS;
 }
@@ -919,7 +1008,7 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
     {
         err_str[CURL_ERROR_SIZE] = 0;
 
-        zend_update_property_long(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO), res TSRMLS_CC);
+        DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO), res);
         zend_update_property_stringl(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_STR), err_str, CURL_ERROR_SIZE TSRMLS_CC);
 
         curl_easy_cleanup(curl_handle);
@@ -933,7 +1022,7 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
 
     if (curl_easy_getinfo(curl_handle, CURLINFO_HTTP_CODE, &l_code) == CURLE_OK)
     {
-        zend_update_property_long(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE), l_code TSRMLS_CC);
+        DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE), l_code);
     }
 
     if (DRUID_G(debug))
