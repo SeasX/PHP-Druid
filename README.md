@@ -1,4 +1,6 @@
 # PHP-Druid
+[![Build Status](https://travis-ci.org/Neeke/PHP-Druid.svg?branch=master)](https://travis-ci.org/Neeke/PHP-Druid)
+
 A Druid driver for PHP with PECL extension
 
 ## Install
