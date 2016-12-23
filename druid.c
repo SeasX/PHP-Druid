@@ -770,6 +770,8 @@ int druid_php_rand(TSRMLS_D)
 
 char *druid_get_host(zval *druid TSRMLS_DC)
 {
+    int hash_sum = 0;
+    int step = 0;
     zval *host_rand,*hosts;
     host_rand = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOST_RAND));
 
@@ -782,25 +784,19 @@ char *druid_get_host(zval *druid TSRMLS_DC)
     if (Z_TYPE_P(host_rand) == IS_TRUE)
     {
         hosts = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOSTS));
-
+        hash_sum = zend_hash_num_elements(HASH_OF(hosts));
         ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(hosts), num_key, str_key, entry)
         {
-            if (UNEXPECTED(!str_key))
-            {
-                zend_string *s = zval_get_string(entry);
+            step++;
+            zend_string *s = zval_get_string(entry);
 
-                if (druid_php_rand(TSRMLS_C) == SUCCESS)
-                {
-                    return ZSTR_VAL(s);
-                }
-                else
-                {
-                    zend_string_release(s);
-                }
+            if (druid_php_rand(TSRMLS_C) == SUCCESS || step == hash_sum)
+            {
+                return ZSTR_VAL(s);
             }
             else
             {
-
+                zend_string_release(s);
             }
         }
         ZEND_HASH_FOREACH_END();
@@ -812,6 +808,8 @@ char *druid_get_host(zval *druid TSRMLS_DC)
 
         hosts = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOSTS));
 
+        hash_sum = zend_hash_num_elements(HASH_OF(hosts));
+
         zval **entry;
         HashPosition pos;
 
@@ -819,11 +817,13 @@ char *druid_get_host(zval *druid TSRMLS_DC)
             zend_hash_get_current_data_ex(Z_ARRVAL_P(hosts), (void **)&entry, &pos) == SUCCESS;
             zend_hash_move_forward_ex(Z_ARRVAL_P(hosts), &pos)
         ) {
+            step++;
+
             if (Z_TYPE_PP(entry) == IS_ARRAY || Z_TYPE_PP(entry) == IS_OBJECT || Z_TYPE_PP(entry) == IS_LONG) {
                 continue;
             }
 
-            if (druid_php_rand(TSRMLS_C) == SUCCESS)
+            if (druid_php_rand(TSRMLS_C) == SUCCESS || step == hash_sum)
             {
                 return Z_STRVAL_PP(entry);
             }
