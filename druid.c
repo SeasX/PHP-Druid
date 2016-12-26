@@ -146,6 +146,9 @@ STD_PHP_INI_ENTRY("druid.tpl_path", "/data/php-druid/tpl", PHP_INI_PERDIR, OnUpd
 
 STD_PHP_INI_BOOLEAN("druid.debug", "0", PHP_INI_ALL, OnUpdateBool, debug, zend_druid_globals, druid_globals)
 
+STD_PHP_INI_ENTRY("druid.curl_dns_cache_timeout", "1", PHP_INI_ALL, OnUpdateLongGEZero, curl_dns_cache_timeout, zend_druid_globals, druid_globals)
+STD_PHP_INI_ENTRY("druid.curl_connect_timeout", "3", PHP_INI_ALL, OnUpdateLongGEZero, curl_connect_timeout, zend_druid_globals, druid_globals)
+STD_PHP_INI_ENTRY("druid.curl_timeout", "5", PHP_INI_ALL, OnUpdateLongGEZero, curl_timeout, zend_druid_globals, druid_globals)
 PHP_INI_END()
 
 static void php_druid_init_globals(zend_druid_globals *druid_globals)
@@ -996,18 +999,18 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
 
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA,(void *) &tmp);
 
-    curl_easy_setopt(curl_handle,CURLOPT_FOLLOWLOCATION,1);
+    curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION,1);
 
     curl_easy_setopt(curl_handle, CURLOPT_ERRORBUFFER,       err_str);
 
     curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS,        1);
     curl_easy_setopt(curl_handle, CURLOPT_VERBOSE,           0);
-
+    curl_easy_setopt(curl_handle, CURLOPT_MAXREDIRS, 5);
     curl_easy_setopt(curl_handle, CURLOPT_DNS_USE_GLOBAL_CACHE, 1);
-    curl_easy_setopt(curl_handle, CURLOPT_DNS_CACHE_TIMEOUT, 5);
-    curl_easy_setopt(curl_handle, CURLOPT_MAXREDIRS, 20);
-    curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT, 10);
-    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 30);
+
+    curl_easy_setopt(curl_handle, CURLOPT_DNS_CACHE_TIMEOUT, DRUID_G(curl_dns_cache_timeout));
+    curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT, DRUID_G(curl_connect_timeout));
+    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, DRUID_G(curl_timeout));
 
     struct curl_slist  *slist = NULL;
     slist = curl_slist_append(slist, DRUID_CONTENT_TYPE);

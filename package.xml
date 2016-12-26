@@ -16,20 +16,21 @@
         <email>neeke@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2016-12-21</date>
-    <time>22:35:00</time>
+    <date>2016-12-26</date>
+    <time>21:53:00</time>
     <version>
-        <release>0.3.0</release>
-        <api>0.3.0</api>
+        <release>0.6.0</release>
+        <api>0.6.0</api>
     </version>
     <stability>
-        <release>beta</release>
-        <api>beta</api>
+        <release>release</release>
+        <api>release</api>
     </stability>
     <license uri="http://www.apache.org/licenses/LICENSE-2.0.html">Apache2.0</license>
     <notes>
-        - First version for pecl.net
-        - Support PHP 5.*.
+        - Fix #2 missing extension dependencies
+        - Fix #3 Support PHP 7.
+        - Support config curl_dns_cache_timeout,curl_connect_timeout,curl_timeout.
     </notes>
     <contents>
         <dir name="/">

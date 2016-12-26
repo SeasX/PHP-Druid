@@ -21,7 +21,7 @@
 
 #define DRUID_NAME "Druid"
 #define DRUID_CREDITS "neeke@php.net"
-#define PHP_DRUID_VERSION "0.4.0"
+#define PHP_DRUID_VERSION "0.6.0"
 
 #define DRUID_CONTENT_TYPE                  "Content-Type:application/json"
 #define DRUID_PROPERTY_CURL_ERR_NO          "_curl_error_no"
@@ -101,6 +101,10 @@ ZEND_BEGIN_MODULE_GLOBALS(druid)
 	char *host;
 	char *tpl_path;
 	zend_bool debug;
+
+    int curl_dns_cache_timeout;
+    int curl_connect_timeout;
+    int curl_timeout;
 ZEND_END_MODULE_GLOBALS(druid)
 
 extern ZEND_DECLARE_MODULE_GLOBALS(druid);
