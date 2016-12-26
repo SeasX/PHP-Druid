@@ -119,7 +119,7 @@ extern ZEND_DECLARE_MODULE_GLOBALS(druid);
 
 int druid_php_rand(TSRMLS_D);
 char *druid_get_host(zval *druid TSRMLS_DC);
-static zval *druid_getApi(zval *druid, char *request_json TSRMLS_DC);
+static void druid_getApi(zval *return_value, zval *druid, char *request_json TSRMLS_DC);
 int druid_get_debug_info(zval *druid,CURL *curl_handle,char *request_json TSRMLS_DC);
 int druid_get_contents(zval *druid,char *request_json, struct druidCurlResult *resultStr TSRMLS_DC);
 char *druid_file_get_contents_by_tpl(char *filename TSRMLS_DC);
