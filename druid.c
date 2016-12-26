@@ -549,14 +549,14 @@ PHP_METHOD(DRUID_NAME,getData)
     zval *result;
     char *request,*request_json;
     int  request_len;
-    zval **content;
+    zval *content;
 
     if (zend_parse_parameters(argc TSRMLS_CC, "s|z", &request, &request_len, &content) == FAILURE)
     {
         RETURN_FALSE;
     }
 
-    if (argc > 1 && Z_TYPE_PP(content) != IS_ARRAY)
+    if (argc > 1 && Z_TYPE_P(content) != IS_ARRAY)
     {
         php_error_docref(NULL TSRMLS_CC, E_WARNING, "The second argument is not an array");
         RETURN_FALSE;
@@ -564,7 +564,7 @@ PHP_METHOD(DRUID_NAME,getData)
 
     if (argc > 1)
     {
-        request_json = php_strtr_array(request,request_len,HASH_OF(*content));
+        request_json = php_strtr_array(request,request_len,HASH_OF(content));
     }
     else
     {
