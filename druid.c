@@ -351,6 +351,7 @@ PHP_METHOD(DRUID_NAME, setTplPath)
 }
 
 /*Just used by PHP7*/
+#if PHP_VERSION_ID >= 70000
 // We asure the src is on heap, so every call we can safe free than alloc.
 static char *strreplace(char *src, const char *oldstr, const char *newstr, size_t len)
 {
@@ -380,7 +381,6 @@ static char *strreplace(char *src, const char *oldstr, const char *newstr, size_
     return src;
 }
 
-#if PHP_VERSION_ID >= 70000
 static char *php_strtr_array(char *str, int slen, HashTable *pats)
 {
     zend_ulong num_key;
@@ -392,7 +392,7 @@ static char *php_strtr_array(char *str, int slen, HashTable *pats)
     {
         if (UNEXPECTED(!str_key))
         {
-
+            (void)num_key;
         }
         else
         {
@@ -595,7 +595,6 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
 
     zval *result;
     char *tpl,*request,*request_json,*filename;
-    int  tpl_len,filename_len;
     zval *tpl_path;
 
 #if PHP_VERSION_ID >= 70000
@@ -613,9 +612,9 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
         RETURN_FALSE;
     }
     tpl = ZSTR_VAL(tpl_tmp);
-    tpl_len = ZSTR_LEN(tpl_tmp);
 
 #else
+    int  tpl_len;
     zval **content;
     if (zend_parse_parameters(argc TSRMLS_CC, "s|Z", &tpl, &tpl_len, &content) == FAILURE)
     {
@@ -632,7 +631,7 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
 
     tpl_path = DRUID_ZEND_READ_PROPERTY(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH));
 
-    filename_len = spprintf(&filename, 0, "%s/%s", Z_STRVAL_P(tpl_path),tpl);
+    spprintf(&filename, 0, "%s/%s", Z_STRVAL_P(tpl_path),tpl);
     request = druid_file_get_contents_by_tpl(filename TSRMLS_CC);
     efree(filename);
 
@@ -807,6 +806,8 @@ char *druid_get_host(zval *druid TSRMLS_DC)
         hash_sum = zend_hash_num_elements(HASH_OF(hosts));
         ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(hosts), num_key, str_key, entry)
         {
+            (void)num_key;
+            (void)str_key;
             step++;
             zend_string *s = zval_get_string(entry);
 
@@ -971,9 +972,7 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
     CURL *curl_handle;
     CURLcode res;
     char *url;
-    char   *s_code;
     long    l_code;
-    double  d_code;
 
     char err_str[CURL_ERROR_SIZE + 1];
     struct druidCurlResult tmp;
