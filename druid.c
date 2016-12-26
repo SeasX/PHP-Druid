@@ -548,7 +548,11 @@ PHP_METHOD(DRUID_NAME,getData)
 
     zval *result;
     char *request,*request_json;
+#if PHP_VERSION_ID >= 70000
+    size_t  request_len;
+#else
     int  request_len;
+#endif
     zval *content;
 
     if (zend_parse_parameters(argc TSRMLS_CC, "s|z", &request, &request_len, &content) == FAILURE)
