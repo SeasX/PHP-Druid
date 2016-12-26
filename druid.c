@@ -76,21 +76,27 @@
 
 
 ZEND_DECLARE_MODULE_GLOBALS(druid)
-#if ZEND_MODULE_API_NO >= 20050922
-zend_module_dep druid_deps[] =
+
+static zend_module_dep druid_deps[] =
 {
+    ZEND_MOD_REQUIRED("curl")
     ZEND_MOD_REQUIRED("json")
-    {
-        NULL, NULL, NULL
-    }
-};
+#ifdef ZEND_MOD_END
+    ZEND_MOD_END
+#else
+    {NULL, NULL, NULL}
 #endif
+};
 
 static int le_druid;
 
 const zend_function_entry druid_functions[] =
 {
+#ifdef PHP_FE_END
+    PHP_FE_END
+#else
     {NULL, NULL, NULL}
+#endif
 };
 
 const zend_function_entry druid_methods[] =
@@ -114,9 +120,9 @@ const zend_function_entry druid_methods[] =
 
 zend_module_entry druid_module_entry =
 {
-#if ZEND_MODULE_API_NO >= 20010901
-    STANDARD_MODULE_HEADER,
-#endif
+    STANDARD_MODULE_HEADER_EX,
+    NULL,
+    druid_deps,
     DRUID_NAME,
     druid_functions,
     PHP_MINIT(druid),
@@ -124,9 +130,7 @@ zend_module_entry druid_module_entry =
     PHP_RINIT(druid),
     PHP_RSHUTDOWN(druid),
     PHP_MINFO(druid),
-#if ZEND_MODULE_API_NO >= 20010901
     PHP_DRUID_VERSION,
-#endif
     STANDARD_MODULE_PROPERTIES
 };
 
