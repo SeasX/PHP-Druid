@@ -28,6 +28,10 @@ $ pecl install Druid
     druid.debug = 1
     druid.host = "http://10.0.3.46:9082/druid/v2/"
     druid.tpl_path = "/data/php-druid/tpl"
+    druid.curl_dns_cache_timeout = 1
+    druid.curl_connect_timeout = 3
+    druid.curl_timeout = 5
+    
     
 ## Demo
 
