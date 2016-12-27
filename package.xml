@@ -17,10 +17,10 @@
         <active>yes</active>
     </lead>
     <date>2016-12-27</date>
-    <time>12:05:00</time>
+    <time>16:26:00</time>
     <version>
-        <release>0.8.0</release>
-        <api>0.8.0</api>
+        <release>0.9.0</release>
+        <api>0.9.0</api>
     </version>
     <stability>
         <release>stable</release>
@@ -29,6 +29,7 @@
     <license uri="http://www.apache.org/licenses/LICENSE-2.0.html">Apache2.0</license>
     <notes>
         - Fix #5 undefined symbol: Z_TYPE_PP (PHP 7)
+        - Support arg info for php --re.
         - Reformat function getDataByTpl().
     </notes>
     <contents>
