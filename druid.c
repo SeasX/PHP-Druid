@@ -101,18 +101,18 @@ const zend_function_entry druid_functions[] =
 
 const zend_function_entry druid_methods[] =
 {
-    PHP_ME(DRUID_NAME, __construct, NULL, ZEND_ACC_CTOR|ZEND_ACC_PRIVATE)
-    PHP_ME(DRUID_NAME, __clone, NULL, ZEND_ACC_CLONE|ZEND_ACC_PRIVATE)
-    PHP_ME(DRUID_NAME, __sleep, NULL, ZEND_ACC_PRIVATE)
-    PHP_ME(DRUID_NAME, __wakeup, NULL, ZEND_ACC_PRIVATE)
-    PHP_ME(DRUID_NAME, __destruct,               NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
-    PHP_ME(DRUID_NAME, getInstance,    	         NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(DRUID_NAME, debugWitch,    	         NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(DRUID_NAME, setDruidHosts,    	     NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(DRUID_NAME, setTplPath,    	         NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(DRUID_NAME, getData,    	             NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(DRUID_NAME, getDataByTpl,    	     NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(DRUID_NAME, getDebugInfo,    	     NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, __construct,             NULL, ZEND_ACC_CTOR|ZEND_ACC_PRIVATE)
+    PHP_ME(DRUID_NAME, __clone,                 NULL, ZEND_ACC_CLONE|ZEND_ACC_PRIVATE)
+    PHP_ME(DRUID_NAME, __sleep,                 NULL, ZEND_ACC_PRIVATE)
+    PHP_ME(DRUID_NAME, __wakeup,                NULL, ZEND_ACC_PRIVATE)
+    PHP_ME(DRUID_NAME, __destruct,              NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
+    PHP_ME(DRUID_NAME, getInstance,    	        NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(DRUID_NAME, debugWitch,    	        NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, setDruidHosts,    	    NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, setTplPath,    	        NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, getData,    	            NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, getDataByTpl,    	    NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, getDebugInfo,    	    NULL, ZEND_ACC_PUBLIC)
     {
         NULL, NULL, NULL
     }
@@ -576,7 +576,8 @@ PHP_METHOD(DRUID_NAME,getData)
 
     zval *druid = zend_read_static_property(druid_ce, ZEND_STRL(DRUID_NAME), 1 TSRMLS_CC);
 
-    druid_getApi(return_value, druid, request_json TSRMLS_CC);         //CURL查询
+    druid_getApi(return_value, druid, request_json TSRMLS_CC);
+    efree(request_json);
 }
 
 PHP_METHOD(DRUID_NAME,getDataByTpl)
@@ -585,12 +586,15 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
 
     char *tpl,*request,*request_json,*filename;
     zval *tpl_path;
-
-#if PHP_VERSION_ID >= 70000
-    zend_string *tpl_tmp;
     zval *content;
 
-    if (zend_parse_parameters(argc TSRMLS_CC, "S|z", &tpl_tmp, &content) == FAILURE)
+#if PHP_VERSION_ID >= 70000
+    size_t  tpl_len;
+#else
+    int  tpl_len;
+#endif
+
+    if (zend_parse_parameters(argc TSRMLS_CC, "s|z", &tpl, &tpl_len, &content) == FAILURE)
     {
         RETURN_FALSE;
     }
@@ -600,23 +604,6 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
         php_error_docref(NULL TSRMLS_CC, E_WARNING, "The second argument is not an array");
         RETURN_FALSE;
     }
-    tpl = ZSTR_VAL(tpl_tmp);
-
-#else
-    int  tpl_len;
-    zval **content;
-    if (zend_parse_parameters(argc TSRMLS_CC, "s|Z", &tpl, &tpl_len, &content) == FAILURE)
-    {
-        RETURN_FALSE;
-    }
-
-    if (argc > 1 && Z_TYPE_PP(content) != IS_ARRAY)
-    {
-        php_error_docref(NULL TSRMLS_CC, E_WARNING, "The second argument is not an array");
-        RETURN_FALSE;
-    }
-
-#endif
 
     tpl_path = DRUID_ZEND_READ_PROPERTY(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH));
 
@@ -626,11 +613,7 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
 
     if (argc > 1)
     {
-#if PHP_VERSION_ID >= 70000
         request_json = php_strtr_array(request,strlen(request),HASH_OF(content));
-#else
-        request_json = php_strtr_array(request,strlen(request),HASH_OF(*content));
-#endif
     }
     else
     {
@@ -640,6 +623,7 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
     zval *druid = zend_read_static_property(druid_ce, ZEND_STRL(DRUID_NAME), 1 TSRMLS_CC);
 
     druid_getApi(return_value, druid, request_json TSRMLS_CC);
+    efree(request_json);
 }
 
 PHP_METHOD(DRUID_NAME,getDebugInfo)
