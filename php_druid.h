@@ -21,7 +21,7 @@
 
 #define DRUID_NAME "Druid"
 #define DRUID_CREDITS "neeke@php.net"
-#define PHP_DRUID_VERSION "0.8.0"
+#define PHP_DRUID_VERSION "0.9.0"
 
 #define DRUID_CONTENT_TYPE                  "Content-Type:application/json"
 #define DRUID_PROPERTY_CURL_ERR_NO          "_curl_error_no"

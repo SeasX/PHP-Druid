@@ -99,19 +99,49 @@ const zend_function_entry druid_functions[] =
 #endif
 };
 
+ZEND_BEGIN_ARG_INFO_EX(druid_void_arginfo, 0, 0, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(druid_getinstance_arginfo, 0, 0, 0)
+//    ZEND_ARG_INFO(0, instance_name)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(druid_debug_arginfo, 0, 0, 1)
+    ZEND_ARG_INFO(0, debug)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(druid_setdruidhosts_arginfo, 0, 0, 1)
+    ZEND_ARG_INFO(0, hosts)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(druid_settplpath_arginfo, 0, 0, 1)
+    ZEND_ARG_INFO(0, tpl_path)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(druid_getdata_arginfo, 0, 0, 1)
+    ZEND_ARG_INFO(0, request_json)
+    ZEND_ARG_INFO(0, content_array)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(druid_getdatabytpl_arginfo, 0, 0, 1)
+    ZEND_ARG_INFO(0, request_json_tpl)
+    ZEND_ARG_INFO(0, content_array)
+ZEND_END_ARG_INFO()
+
+
 const zend_function_entry druid_methods[] =
 {
-    PHP_ME(DRUID_NAME, __construct,             NULL, ZEND_ACC_CTOR|ZEND_ACC_PRIVATE)
+    PHP_ME(DRUID_NAME, __construct,             druid_void_arginfo, ZEND_ACC_CTOR|ZEND_ACC_PRIVATE)
     PHP_ME(DRUID_NAME, __clone,                 NULL, ZEND_ACC_CLONE|ZEND_ACC_PRIVATE)
     PHP_ME(DRUID_NAME, __sleep,                 NULL, ZEND_ACC_PRIVATE)
     PHP_ME(DRUID_NAME, __wakeup,                NULL, ZEND_ACC_PRIVATE)
     PHP_ME(DRUID_NAME, __destruct,              NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
-    PHP_ME(DRUID_NAME, getInstance,    	        NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-    PHP_ME(DRUID_NAME, debugWitch,    	        NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(DRUID_NAME, setDruidHosts,    	    NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(DRUID_NAME, setTplPath,    	        NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(DRUID_NAME, getData,    	            NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(DRUID_NAME, getDataByTpl,    	    NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, getInstance,    	        druid_getinstance_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+    PHP_ME(DRUID_NAME, debugWitch,    	        druid_debug_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, setDruidHosts,    	    druid_setdruidhosts_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, setTplPath,    	        druid_settplpath_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, getData,    	            druid_getdata_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, getDataByTpl,    	    druid_getdatabytpl_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(DRUID_NAME, getDebugInfo,    	    NULL, ZEND_ACC_PUBLIC)
     {
         NULL, NULL, NULL

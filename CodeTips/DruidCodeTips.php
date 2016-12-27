@@ -58,7 +58,7 @@ class Druid
         return TRUE;
     }
 
-    public function setTplPath($sTplPath)
+    public function setTplPath($tpl_path)
     {
         return TRUE;
     }
@@ -68,7 +68,7 @@ class Druid
         return array();
     }
 
-    public function getDataByTpl($tpl, array $array = array())
+    public function getDataByTpl($request_json_tpl, array $array = array())
     {
         return array();
     }
