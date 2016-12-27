@@ -31,7 +31,7 @@ var_dump($Druid);
      */
     $result_2 = $Druid->getData(file_get_contents(__DIR__ . '/tpl/request_full_demo.json'));
 
-    var_dump($result_1);
+    var_dump($result_1,$result_2);
 
 } catch (Exception $e) {
     var_dump($e->getCode(), $e->getMessage(), $Druid->getDebugInfo());
