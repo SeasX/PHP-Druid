@@ -351,6 +351,7 @@ PHP_METHOD(DRUID_NAME, setTplPath)
 }
 
 /*Just used by PHP7*/
+#if PHP_VERSION_ID >= 70000
 // We asure the src is on heap, so every call we can safe free than alloc.
 static char *strreplace(char *src, const char *oldstr, const char *newstr, size_t len)
 {
@@ -380,7 +381,6 @@ static char *strreplace(char *src, const char *oldstr, const char *newstr, size_
     return src;
 }
 
-#if PHP_VERSION_ID >= 70000
 static char *php_strtr_array(char *str, int slen, HashTable *pats)
 {
     zend_ulong num_key;
@@ -392,7 +392,7 @@ static char *php_strtr_array(char *str, int slen, HashTable *pats)
     {
         if (UNEXPECTED(!str_key))
         {
-
+            (void)num_key;
         }
         else
         {
@@ -546,17 +546,20 @@ PHP_METHOD(DRUID_NAME,getData)
 {
     int argc = ZEND_NUM_ARGS();
 
-    zval *result;
     char *request,*request_json;
+#if PHP_VERSION_ID >= 70000
+    size_t  request_len;
+#else
     int  request_len;
-    zval **content;
+#endif
+    zval *content;
 
     if (zend_parse_parameters(argc TSRMLS_CC, "s|z", &request, &request_len, &content) == FAILURE)
     {
         RETURN_FALSE;
     }
 
-    if (argc > 1 && Z_TYPE_PP(content) != IS_ARRAY)
+    if (argc > 1 && Z_TYPE_P(content) != IS_ARRAY)
     {
         php_error_docref(NULL TSRMLS_CC, E_WARNING, "The second argument is not an array");
         RETURN_FALSE;
@@ -564,7 +567,7 @@ PHP_METHOD(DRUID_NAME,getData)
 
     if (argc > 1)
     {
-        request_json = php_strtr_array(request,request_len,HASH_OF(*content));
+        request_json = php_strtr_array(request,request_len,HASH_OF(content));
     }
     else
     {
@@ -573,25 +576,14 @@ PHP_METHOD(DRUID_NAME,getData)
 
     zval *druid = zend_read_static_property(druid_ce, ZEND_STRL(DRUID_NAME), 1 TSRMLS_CC);
 
-    result = druid_getApi(druid,request_json TSRMLS_CC);         //CURL查询
-
-    if (result == NULL)
-    {
-        RETURN_FALSE;
-    }
-    else
-    {
-        RETURN_ZVAL(result,1,0);
-    }
+    druid_getApi(return_value, druid, request_json TSRMLS_CC);         //CURL查询
 }
 
 PHP_METHOD(DRUID_NAME,getDataByTpl)
 {
     int argc = ZEND_NUM_ARGS();
 
-    zval *result;
     char *tpl,*request,*request_json,*filename;
-    int  tpl_len,filename_len;
     zval *tpl_path;
 
 #if PHP_VERSION_ID >= 70000
@@ -609,9 +601,9 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
         RETURN_FALSE;
     }
     tpl = ZSTR_VAL(tpl_tmp);
-    tpl_len = ZSTR_LEN(tpl_tmp);
 
 #else
+    int  tpl_len;
     zval **content;
     if (zend_parse_parameters(argc TSRMLS_CC, "s|Z", &tpl, &tpl_len, &content) == FAILURE)
     {
@@ -628,7 +620,7 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
 
     tpl_path = DRUID_ZEND_READ_PROPERTY(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH));
 
-    filename_len = spprintf(&filename, 0, "%s/%s", Z_STRVAL_P(tpl_path),tpl);
+    spprintf(&filename, 0, "%s/%s", Z_STRVAL_P(tpl_path),tpl);
     request = druid_file_get_contents_by_tpl(filename TSRMLS_CC);
     efree(filename);
 
@@ -647,17 +639,7 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
 
     zval *druid = zend_read_static_property(druid_ce, ZEND_STRL(DRUID_NAME), 1 TSRMLS_CC);
 
-    result = druid_getApi(druid,request_json TSRMLS_CC);
-    efree(request_json);
-
-    if (result == NULL)
-    {
-        RETURN_FALSE;
-    }
-    else
-    {
-        RETURN_ZVAL(result,1,1);
-    }
+    druid_getApi(return_value, druid, request_json TSRMLS_CC);
 }
 
 PHP_METHOD(DRUID_NAME,getDebugInfo)
@@ -714,18 +696,10 @@ char *druid_file_get_contents_by_tpl(char *filename TSRMLS_DC)
     php_stream_close(stream);
 }
 
-static zval *druid_getApi(zval *druid, char *request_json TSRMLS_DC)
+static void druid_getApi(zval *return_value, zval *druid, char *request_json TSRMLS_DC)
 {
     zval *err_str,*err_no;
     zval *response_code;
-#if PHP_VERSION_ID >= 70000
-    zval *resultZval;
-
-#else
-    zval *resultZval;
-    MAKE_STD_ZVAL(resultZval);
-
-#endif
 
     struct druidCurlResult curlResult;
 
@@ -736,7 +710,7 @@ static zval *druid_getApi(zval *druid, char *request_json TSRMLS_DC)
 
         free(curlResult.memory);
         zend_throw_exception(php_com_exception_class_entry,Z_STRVAL_P(err_str),Z_LVAL_P(err_no) TSRMLS_CC);
-        return NULL;
+        RETURN_FALSE;
     }
 
     response_code = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE));
@@ -744,13 +718,11 @@ static zval *druid_getApi(zval *druid, char *request_json TSRMLS_DC)
     {
         zend_throw_exception(php_com_exception_class_entry,curlResult.memory,Z_LVAL_P(response_code) TSRMLS_CC);
         free(curlResult.memory);
-        return NULL;
+        RETURN_FALSE;
     }
 
-    php_json_decode(resultZval, curlResult.memory, (long)curlResult.size, 1, 512 TSRMLS_CC);
+    php_json_decode(return_value, curlResult.memory, (long)curlResult.size, 1, 512 TSRMLS_CC);
     free(curlResult.memory);
-
-    return resultZval;
 }
 
 
@@ -803,6 +775,8 @@ char *druid_get_host(zval *druid TSRMLS_DC)
         hash_sum = zend_hash_num_elements(HASH_OF(hosts));
         ZEND_HASH_FOREACH_KEY_VAL(Z_ARRVAL_P(hosts), num_key, str_key, entry)
         {
+            (void)num_key;
+            (void)str_key;
             step++;
             zend_string *s = zval_get_string(entry);
 
@@ -967,9 +941,7 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
     CURL *curl_handle;
     CURLcode res;
     char *url;
-    char   *s_code;
     long    l_code;
-    double  d_code;
 
     char err_str[CURL_ERROR_SIZE + 1];
     struct druidCurlResult tmp;
