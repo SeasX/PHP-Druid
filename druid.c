@@ -107,25 +107,25 @@ ZEND_BEGIN_ARG_INFO_EX(druid_getinstance_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(druid_debug_arginfo, 0, 0, 1)
-    ZEND_ARG_INFO(0, debug)
+ZEND_ARG_INFO(0, debug)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(druid_setdruidhosts_arginfo, 0, 0, 1)
-    ZEND_ARG_INFO(0, hosts)
+ZEND_ARG_INFO(0, hosts)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(druid_settplpath_arginfo, 0, 0, 1)
-    ZEND_ARG_INFO(0, tpl_path)
+ZEND_ARG_INFO(0, tpl_path)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(druid_getdata_arginfo, 0, 0, 1)
-    ZEND_ARG_INFO(0, request_json)
-    ZEND_ARG_INFO(0, content_array)
+ZEND_ARG_INFO(0, request_json)
+ZEND_ARG_INFO(0, content_array)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(druid_getdatabytpl_arginfo, 0, 0, 1)
-    ZEND_ARG_INFO(0, request_json_tpl)
-    ZEND_ARG_INFO(0, content_array)
+ZEND_ARG_INFO(0, request_json_tpl)
+ZEND_ARG_INFO(0, content_array)
 ZEND_END_ARG_INFO()
 
 
@@ -188,14 +188,18 @@ static void php_druid_init_globals(zend_druid_globals *druid_globals)
 
 PHP_MINIT_FUNCTION(druid)
 {
+    zend_class_entry ce;
 
     ZEND_INIT_MODULE_GLOBALS(druid, php_druid_init_globals, NULL);
     REGISTER_INI_ENTRIES();
-    zend_class_entry ce;
+
     INIT_CLASS_ENTRY(ce, DRUID_NAME, druid_methods);
 
-
-    druid_ce=zend_register_internal_class(&ce TSRMLS_CC);
+#if PHP_VERSION_ID >= 70000
+    druid_ce = zend_register_internal_class_ex(&ce, NULL);
+#else
+    druid_ce = zend_register_internal_class_ex(&ce, NULL, NULL TSRMLS_CC);
+#endif
 
     zend_declare_class_constant_stringl(druid_ce,ZEND_STRL("DRUID_CONTENT_TYPE"),ZEND_STRL(DRUID_CONTENT_TYPE) TSRMLS_CC);
 
@@ -260,12 +264,6 @@ PHP_METHOD(DRUID_NAME, getInstance)
     }
     else
     {
-#if PHP_VERSION_ID >= 70000
-
-#else
-        MAKE_STD_ZVAL(instance);
-#endif
-
         object_init_ex(instance, druid_ce);
 
         DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO), 0);
@@ -296,8 +294,6 @@ PHP_METHOD(DRUID_NAME,__destruct)
     zend_update_property_null(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH) TSRMLS_CC);
     zend_update_property_null(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_HOSTS) TSRMLS_CC);
 
-    zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_PROPERTY_TPL_PATH),ZEND_ACC_PROTECTED TSRMLS_CC);
-    zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), ZEND_ACC_PROTECTED TSRMLS_CC);
     zend_update_static_property_null(druid_ce, ZEND_STRL(DRUID_NAME) TSRMLS_CC);
 }
 
@@ -350,23 +346,14 @@ PHP_METHOD(DRUID_NAME, setDruidHosts)
 
 PHP_METHOD(DRUID_NAME, setTplPath)
 {
-#if PHP_VERSION_ID >= 70000
-
-    zend_string *tpl_path;
-
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "S", &tpl_path) == FAILURE)
-    {
-        RETURN_FALSE;
-    }
-
-    zend_update_property_stringl(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH), ZSTR_VAL(tpl_path), ZSTR_LEN(tpl_path));
-
-    RETURN_TRUE;
-
-#else
-
     char *tpl_path;
-    int tpl_path_len = 0;
+
+#if PHP_VERSION_ID >= 70000
+    size_t  tpl_path_len;
+#else
+    int  tpl_path_len;
+#endif
+
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &tpl_path, &tpl_path_len) == FAILURE)
     {
         RETURN_FALSE;
@@ -375,9 +362,6 @@ PHP_METHOD(DRUID_NAME, setTplPath)
     zend_update_property_string(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH), tpl_path TSRMLS_CC);
 
     RETURN_TRUE;
-
-#endif
-
 }
 
 /*Just used by PHP7*/
@@ -434,6 +418,7 @@ static char *php_strtr_array(char *str, int slen, HashTable *pats)
             }
 
             zend_string_release(s);
+            zend_string_release(str_key);
         }
     }
     ZEND_HASH_FOREACH_END();
@@ -604,9 +589,7 @@ PHP_METHOD(DRUID_NAME,getData)
         request_json = request;
     }
 
-    zval *druid = zend_read_static_property(druid_ce, ZEND_STRL(DRUID_NAME), 1 TSRMLS_CC);
-
-    druid_getApi(return_value, druid, request_json TSRMLS_CC);
+    druid_getApi(return_value, getThis(), request_json TSRMLS_CC);
     efree(request_json);
 }
 
@@ -641,6 +624,11 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
     request = druid_file_get_contents_by_tpl(filename TSRMLS_CC);
     efree(filename);
 
+    if (request == NULL)
+    {
+        RETURN_FALSE;
+    }
+
     if (argc > 1)
     {
         request_json = php_strtr_array(request,strlen(request),HASH_OF(content));
@@ -650,10 +638,9 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
         request_json = tpl;
     }
 
-    zval *druid = zend_read_static_property(druid_ce, ZEND_STRL(DRUID_NAME), 1 TSRMLS_CC);
-
-    druid_getApi(return_value, druid, request_json TSRMLS_CC);
+    druid_getApi(return_value, getThis(), request_json TSRMLS_CC);
     efree(request_json);
+    efree(request);
 }
 
 PHP_METHOD(DRUID_NAME,getDebugInfo)
@@ -681,7 +668,7 @@ char *druid_file_get_contents_by_tpl(char *filename TSRMLS_DC)
     stream = php_stream_open_wrapper_ex(filename, "rb",0 | REPORT_ERRORS, NULL, context);
     if (!stream)
     {
-        return "";
+        return NULL;
     }
 
 #if PHP_VERSION_ID >= 70000
@@ -698,13 +685,13 @@ char *druid_file_get_contents_by_tpl(char *filename TSRMLS_DC)
     else if (len == 0)
     {
         php_stream_close(stream);
-        return "";
+        return NULL;
 #endif
     }
     else
     {
         php_stream_close(stream);
-        return "";
+        return NULL;
     }
 
     php_stream_close(stream);
@@ -775,13 +762,22 @@ char *druid_get_host(zval *druid TSRMLS_DC)
     int hash_sum = 0;
     int step = 0;
     zval *host_rand,*hosts;
-    host_rand = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOST_RAND));
-
 #if PHP_VERSION_ID >= 70000
 
     zend_ulong num_key;
     zend_string *str_key;
     zval *entry;
+
+#else
+
+    zval **entry;
+    HashPosition pos;
+
+#endif
+
+    host_rand = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOST_RAND));
+
+#if PHP_VERSION_ID >= 70000
 
     if (Z_TYPE_P(host_rand) == IS_TRUE)
     {
@@ -814,9 +810,6 @@ char *druid_get_host(zval *druid TSRMLS_DC)
         hosts = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_HOSTS));
 
         hash_sum = zend_hash_num_elements(HASH_OF(hosts));
-
-        zval **entry;
-        HashPosition pos;
 
         for (zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(hosts), &pos);
                 zend_hash_get_current_data_ex(Z_ARRVAL_P(hosts), (void **)&entry, &pos) == SUCCESS;
@@ -956,6 +949,7 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
     CURLcode res;
     char *url;
     long    l_code;
+    struct curl_slist  *slist = NULL;
 
     char err_str[CURL_ERROR_SIZE + 1];
     struct druidCurlResult tmp;
@@ -998,7 +992,6 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
     curl_easy_setopt(curl_handle, CURLOPT_CONNECTTIMEOUT, DRUID_G(curl_connect_timeout));
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, DRUID_G(curl_timeout));
 
-    struct curl_slist  *slist = NULL;
     slist = curl_slist_append(slist, DRUID_CONTENT_TYPE);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, slist);
 

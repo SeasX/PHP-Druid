@@ -3,8 +3,8 @@
 
 ARG_ENABLE("druid", "enable druid support", "no");
 
-if (PHP_druid != "no") {
+if (PHP_DRUID != "no") {
 	EXTENSION("druid", "druid.c");
 
-	AC_DEFINE("HAVE_druid", 1, "Have druid Support");
+	AC_DEFINE("HAVE_DRUID", 1, "Have druid Support");
 }
