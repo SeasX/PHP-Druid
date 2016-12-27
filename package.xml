@@ -16,11 +16,11 @@
         <email>neeke@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2016-12-26</date>
-    <time>21:53:00</time>
+    <date>2016-12-27</date>
+    <time>12:05:00</time>
     <version>
-        <release>0.6.0</release>
-        <api>0.6.0</api>
+        <release>0.8.0</release>
+        <api>0.8.0</api>
     </version>
     <stability>
         <release>stable</release>
@@ -28,9 +28,8 @@
     </stability>
     <license uri="http://www.apache.org/licenses/LICENSE-2.0.html">Apache2.0</license>
     <notes>
-        - Fix #2 missing extension dependencies
-        - Fix #3 Support PHP 7.
-        - Support config curl_dns_cache_timeout,curl_connect_timeout,curl_timeout.
+        - Fix #5 undefined symbol: Z_TYPE_PP (PHP 7)
+        - Reformat function getDataByTpl().
     </notes>
     <contents>
         <dir name="/">
@@ -84,6 +83,24 @@
             <notes>
                 - First version for pecl.net
                 - Support PHP 5.*.
+            </notes>
+        </release>
+        <release>
+            <date>2016-12-26</date>
+            <time>21:53:00</time>
+            <version>
+                <release>0.6.0</release>
+                <api>0.6.0</api>
+            </version>
+            <stability>
+                <release>stable</release>
+                <api>stable</api>
+            </stability>
+            <license uri="http://www.apache.org/licenses/LICENSE-2.0.html">Apache2.0</license>
+            <notes>
+                - Fix #2 missing extension dependencies
+                - Fix #3 Support PHP 7.
+                - Support config curl_dns_cache_timeout,curl_connect_timeout,curl_timeout.
             </notes>
         </release>
     </changelog>
