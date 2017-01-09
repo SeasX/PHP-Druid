@@ -590,7 +590,11 @@ PHP_METHOD(DRUID_NAME,getData)
     }
 
     druid_getApi(return_value, getThis(), request_json TSRMLS_CC);
-    efree(request_json);
+
+    if (argc > 1)
+    {
+        efree(request_json);
+    }
 }
 
 PHP_METHOD(DRUID_NAME,getDataByTpl)
@@ -635,12 +639,16 @@ PHP_METHOD(DRUID_NAME,getDataByTpl)
     }
     else
     {
-        request_json = tpl;
+        request_json = request;
     }
 
     druid_getApi(return_value, getThis(), request_json TSRMLS_CC);
-    efree(request_json);
+
     efree(request);
+    if (argc > 1)
+    {
+        efree(request_json);
+    }
 }
 
 PHP_METHOD(DRUID_NAME,getDebugInfo)
