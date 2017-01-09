@@ -44,7 +44,7 @@ $ pecl install Druid
     
     try {
     
-        $Druid_1 = Druid::getInstance();
+        $Druid_1 = Druid::getInstance(Druid::DRUID_INSTANCE_DEFAULT);
         $Druid_1->debugWitch(TRUE);
     
         /**

@@ -6,6 +6,8 @@
  */
 class Druid
 {
+    const DRUID_INSTANCE_DEFAULT = 'default';
+
     /**
      * @var Druid
      */
@@ -14,7 +16,7 @@ class Druid
     /**
      * @return Druid
      */
-    static public function getInstance($instance_name = 'default')
+    static public function getInstance($instance_name)
     {
         if (self::$Druid == NULL) {
             self::$Druid = array();

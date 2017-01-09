@@ -43,6 +43,7 @@
 #define DRUID_ADD_ASSOC_LONG_EX(z, s, l, v) add_assoc_long_ex(&z, s, l, (long) v)
 #define DRUID_ADD_ASSOC_DOUBLE_EX(z, s, l, v) add_assoc_double_ex(&z, s, l, (double) v)
 #define DRUID_ADD_ASSOC_ZVAL_EX(z, s, l, zn) add_assoc_zval_ex(z, s, l, zn)
+#define DRUID_ADD_ASSOC_ZVAL_EX_AND(z, s, l, zn) add_assoc_zval_ex(&z, s, l, zn)
 #define DRUID_ADD_ASSOC_STRING_EX(a, k, l, s) add_assoc_string_ex(&a, k, l, s)
 #define DRUID_ADD_NEXT_INDEX_STRING(a, s) add_next_index_string(a, s)
 #define DRUID_ADD_NEXT_INDEX_STRINGL(a, s, l) add_next_index_stringl(a, s, l)
@@ -51,7 +52,9 @@
 
 #define DRUID_ZEND_READ_PROPERTY(ce,z,zl) zend_read_property(ce, z, zl, 1, NULL)
 #define DRUID_ZEND_UPDATE_PROPERTY(ce,z,zl,zn) zend_update_property(ce, z, zl, zn)
+#define DRUID_ZEND_UPDATE_STATIC_PROPERTY(ce,zl,zn) zend_update_static_property(ce, zl, &zn)
 #define DRUID_ZEND_UPDATE_PROPERTY_LONG(ce,z,zl,zn) zend_update_property_long(ce,z,zl,zn)
+
 #else
 
 #define DRUID_ZVAL_STRING(z, s) ZVAL_STRING(z, s, 1)
@@ -63,6 +66,7 @@
 #define DRUID_ADD_ASSOC_LONG_EX(z, s, l, v) add_assoc_long_ex(z, s, l, (long) v)
 #define DRUID_ADD_ASSOC_DOUBLE_EX(z, s, l, v) add_assoc_double_ex(z, s, l, (double) v)
 #define DRUID_ADD_ASSOC_ZVAL_EX(z, s, l, zn) add_assoc_zval_ex(z, s, l, zn)
+#define DRUID_ADD_ASSOC_ZVAL_EX_AND(z, s, l, zn) add_assoc_zval_ex(z, s, l, zn)
 #define DRUID_ADD_ASSOC_STRING_EX(a, k, l, s) add_assoc_string_ex(a, k, l, s, 1)
 #define DRUID_ADD_NEXT_INDEX_STRING(a, s) add_next_index_string(a, s, 1)
 #define DRUID_ADD_NEXT_INDEX_STRINGL(a, s, l) add_next_index_stringl(a, s, l, 1)
@@ -71,6 +75,7 @@
 
 #define DRUID_ZEND_READ_PROPERTY(ce,z,zl) zend_read_property(ce, z, zl, 1 TSRMLS_CC)
 #define DRUID_ZEND_UPDATE_PROPERTY(ce,z,zl,zn) zend_update_property(ce, z, zl, zn TSRMLS_CC)
+#define DRUID_ZEND_UPDATE_STATIC_PROPERTY(ce,zl,zn) zend_update_static_property(ce, zl, zn TSRMLS_CC)
 #define DRUID_ZEND_UPDATE_PROPERTY_LONG(ce,z,zl,zn) zend_update_property_long(ce,z,zl,zn TSRMLS_CC)
 #endif
 
@@ -102,8 +107,8 @@ const zend_function_entry druid_functions[] =
 ZEND_BEGIN_ARG_INFO_EX(druid_void_arginfo, 0, 0, 0)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(druid_getinstance_arginfo, 0, 0, 0)
-//    ZEND_ARG_INFO(0, instance_name)
+ZEND_BEGIN_ARG_INFO_EX(druid_getinstance_arginfo, 0, 0, 1)
+ZEND_ARG_INFO(0, instance_name)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(druid_debug_arginfo, 0, 0, 1)
@@ -202,6 +207,7 @@ PHP_MINIT_FUNCTION(druid)
 #endif
 
     zend_declare_class_constant_stringl(druid_ce,ZEND_STRL("DRUID_CONTENT_TYPE"),ZEND_STRL(DRUID_CONTENT_TYPE) TSRMLS_CC);
+    zend_declare_class_constant_stringl(druid_ce,ZEND_STRL("DRUID_INSTANCE_DEFAULT"),ZEND_STRL(DRUID_INSTANCE_DEFAULT) TSRMLS_CC);
 
     zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_NAME), ZEND_ACC_STATIC | ZEND_ACC_PROTECTED TSRMLS_CC);
 
@@ -252,32 +258,109 @@ PHP_MINFO_FUNCTION(druid)
 
 PHP_METHOD(DRUID_NAME, getInstance)
 {
+    int argc = ZEND_NUM_ARGS();
+    char *instance_name;
+    zval *get_instance_array = NULL;
+
+#if PHP_VERSION_ID >= 70000
+    size_t  instance_name_len;
+    zval *ppzval = NULL;
+    zval set_instance_array;
+#else
+    int  instance_name_len;
+    zval **ppzval = NULL;
+    zval *set_instance_array;
+#endif
 
     zval *instance;
 
-    instance = zend_read_static_property(druid_ce, ZEND_STRL(DRUID_NAME), 1 TSRMLS_CC);
-
-    if (IS_OBJECT == Z_TYPE_P(instance)
-            && instanceof_function(Z_OBJCE_P(instance), druid_ce TSRMLS_CC))
+//In php7 , this params instance_name can not be empty.
+#if PHP_VERSION_ID >= 70000
+    if (zend_parse_parameters(argc TSRMLS_CC, "s", &instance_name, &instance_name_len) == FAILURE)
     {
-        //Do Nothing
+        zend_throw_exception(php_com_exception_class_entry,"The instance_name can not be empty,you can use Druid::DRUID_INSTANCE_DEFAULT",999 TSRMLS_CC);
+        RETURN_FALSE;
+    }
+#else
+    if (zend_parse_parameters(argc TSRMLS_CC, "|s", &instance_name, &instance_name_len) == FAILURE)
+    {
+        RETURN_FALSE;
+    }
+#endif
+
+    if (argc < 1)
+    {
+        instance_name     = DRUID_INSTANCE_DEFAULT;
+        instance_name_len = DRUID_INSTANCE_DEFAULT_LEN;
+    }
+
+    get_instance_array = zend_read_static_property(druid_ce, ZEND_STRL(DRUID_NAME), 1 TSRMLS_CC);
+
+    if (get_instance_array && Z_TYPE_P(get_instance_array) == IS_ARRAY)
+    {
+
+#if PHP_VERSION_ID >= 70000
+        if ((ppzval = zend_hash_str_find(Z_ARRVAL_P(get_instance_array),instance_name,instance_name_len)) != NULL)
+        {
+            RETURN_ZVAL(ppzval, 1, 0);
+        }
+        else
+        {
+            goto initInstance;
+        }
+#else
+        if (zend_hash_find(Z_ARRVAL_P(get_instance_array), ZEND_STRL(instance_name), (void **)&ppzval) == SUCCESS )
+        {
+            RETURN_ZVAL(*ppzval, 1, 0);
+        }
+        else
+        {
+            goto initInstance;
+        }
+#endif
     }
     else
     {
-        object_init_ex(instance, druid_ce);
+#if PHP_VERSION_ID >= 70000
+        array_init(&set_instance_array);
+#else
+        MAKE_STD_ZVAL(set_instance_array);
+        array_init(set_instance_array);
+#endif
+        goto initInstance;
+    }
 
-        DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO), 0);
-        zend_update_property_string(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_STR), "" TSRMLS_CC);
+initInstance:
+#if PHP_VERSION_ID >= 70000
 
-        zend_update_property_string(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_TPL_PATH), DRUID_G(tpl_path) TSRMLS_CC);
+#else
+    MAKE_STD_ZVAL(instance);
+#endif
 
-        DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE), 0);
-        zend_update_property_null(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO) TSRMLS_CC);
+    object_init_ex(instance, druid_ce);
 
-        zend_update_property_null(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_HOSTS) TSRMLS_CC);
-        zend_update_property_bool(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_HOST_RAND), 0 TSRMLS_CC);
+    DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO), 0);
+    zend_update_property_string(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_STR), "" TSRMLS_CC);
 
-        zend_update_static_property(druid_ce, ZEND_STRL(DRUID_NAME), instance TSRMLS_CC);
+    zend_update_property_string(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_TPL_PATH), DRUID_G(tpl_path) TSRMLS_CC);
+
+    DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE), 0);
+    zend_update_property_null(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO) TSRMLS_CC);
+
+    zend_update_property_null(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_HOSTS) TSRMLS_CC);
+    zend_update_property_bool(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_HOST_RAND), 0 TSRMLS_CC);
+
+    if (get_instance_array && IS_ARRAY == Z_TYPE_P(get_instance_array))
+    {
+        DRUID_ADD_ASSOC_ZVAL_EX(get_instance_array,instance_name,instance_name_len,instance);
+        zend_update_static_property(druid_ce, ZEND_STRL(DRUID_NAME), get_instance_array TSRMLS_CC);
+    }
+    else
+    {
+        DRUID_ADD_ASSOC_ZVAL_EX_AND(set_instance_array,instance_name,instance_name_len,instance);
+        DRUID_ZEND_UPDATE_STATIC_PROPERTY(druid_ce, ZEND_STRL(DRUID_NAME), set_instance_array);
+
+        zval_ptr_dtor(&set_instance_array);
     }
 
     RETURN_ZVAL(instance, 1, 0);

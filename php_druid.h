@@ -21,7 +21,7 @@
 
 #define DRUID_NAME "Druid"
 #define DRUID_CREDITS "neeke@php.net"
-#define PHP_DRUID_VERSION "0.9.1"
+#define PHP_DRUID_VERSION "0.9.2"
 
 #define DRUID_CONTENT_TYPE                  "Content-Type:application/json"
 #define DRUID_PROPERTY_CURL_ERR_NO          "_curl_error_no"
@@ -35,6 +35,9 @@
 #define DRUID_PROPERTY_HOSTS                "hosts"
 #define DRUID_PROPERTY_HOST_RAND            "host_rand"
 #define DRUID_PROPERTY_HOST_RAND_BAR        (double)0.5
+
+#define DRUID_INSTANCE_DEFAULT              "default"
+#define DRUID_INSTANCE_DEFAULT_LEN          strlen(DRUID_INSTANCE_DEFAULT)
 
 #define DRUID_RESPONSE_CODE_ERROR_BAR       399
 
