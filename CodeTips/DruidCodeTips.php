@@ -14,13 +14,17 @@ class Druid
     /**
      * @return Druid
      */
-    static public function getInstance()
+    static public function getInstance($instance_name = 'default')
     {
         if (self::$Druid == NULL) {
-            self::$Druid = new self();
+            self::$Druid = array();
         }
 
-        return self::$Druid;
+        if (!array_key_exists($instance_name, self::$Druid)) {
+            self::$Druid[$instance_name] = new self();
+        }
+
+        return self::$Druid[$instance_name];
     }
 
     private function __construct()
