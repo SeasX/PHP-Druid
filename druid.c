@@ -137,7 +137,7 @@ ZEND_END_ARG_INFO()
 const zend_function_entry druid_methods[] =
 {
     PHP_ME(DRUID_NAME, __construct,             druid_void_arginfo, ZEND_ACC_CTOR|ZEND_ACC_PRIVATE)
-    PHP_ME(DRUID_NAME, __clone,                 NULL, ZEND_ACC_CLONE|ZEND_ACC_PRIVATE)
+    PHP_ME(DRUID_NAME, __clone,                 NULL, ZEND_ACC_PRIVATE)
     PHP_ME(DRUID_NAME, __sleep,                 NULL, ZEND_ACC_PRIVATE)
     PHP_ME(DRUID_NAME, __wakeup,                NULL, ZEND_ACC_PRIVATE)
     PHP_ME(DRUID_NAME, __destruct,              NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
