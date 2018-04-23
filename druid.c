@@ -332,7 +332,13 @@ PHP_METHOD(DRUID_NAME, getInstance)
 
 initInstance:
 #if PHP_VERSION_ID >= 70000
+    instance = getThis();
+    zval re_instance;
 
+    if (!instance) {
+        ZVAL_NULL(&re_instance);
+        instance = &re_instance;
+    }
 #else
     MAKE_STD_ZVAL(instance);
 #endif
