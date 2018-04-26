@@ -16,11 +16,11 @@
         <email>neeke@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2017-01-10</date>
-    <time>00:30:00</time>
+    <date>2018-04-26</date>
+    <time>15:30:00</time>
     <version>
-        <release>0.9.2</release>
-        <api>0.9.2</api>
+        <release>0.9.3</release>
+        <api>0.9.3</api>
     </version>
     <stability>
         <release>stable</release>
@@ -28,8 +28,8 @@
     </stability>
     <license uri="http://www.apache.org/licenses/LICENSE-2.0.html">Apache2.0</license>
     <notes>
-        - Fixed #7 Support multi instance by getInstance('instance_2')
-        - Fixed zend_mm_heap corrupted
+        - Merged PR #8 ZEND_ACC_CLONE have been removed in PHP 7.2
+        - Fixed support PHP 7.2
     </notes>
     <contents>
         <dir name="/">
@@ -120,6 +120,23 @@
                 - Support arg info for php --re.
                 - Reformat function getDataByTpl().
                 - Support vc9.
+            </notes>
+        </release>
+        <release>
+            <date>2017-01-10</date>
+            <time>00:30:00</time>
+            <version>
+                <release>0.9.2</release>
+                <api>0.9.2</api>
+            </version>
+            <stability>
+                <release>stable</release>
+                <api>stable</api>
+            </stability>
+            <license uri="http://www.apache.org/licenses/LICENSE-2.0.html">Apache2.0</license>
+            <notes>
+                - Fixed #7 Support multi instance by getInstance('instance_2')
+                - Fixed zend_mm_heap corrupted
             </notes>
         </release>
     </changelog>
