@@ -21,7 +21,7 @@
 
 #define DRUID_NAME "Druid"
 #define DRUID_CREDITS "neeke@php.net"
-#define PHP_DRUID_VERSION "0.9.3"
+#define PHP_DRUID_VERSION "0.9.4"
 
 #define DRUID_CONTENT_TYPE                  "Content-Type:application/json"
 #define DRUID_PROPERTY_CURL_ERR_NO          "_curl_error_no"
@@ -91,8 +91,11 @@ PHP_METHOD(DRUID_NAME, __sleep);
 PHP_METHOD(DRUID_NAME, __wakeup);
 PHP_METHOD(DRUID_NAME, getInstance);
 PHP_METHOD(DRUID_NAME, debugWitch);
+PHP_METHOD(DRUID_NAME, getDebugWitch);
 PHP_METHOD(DRUID_NAME, setDruidHosts);
+PHP_METHOD(DRUID_NAME, getDruidHosts);
 PHP_METHOD(DRUID_NAME, setTplPath);
+PHP_METHOD(DRUID_NAME, getTplPath);
 PHP_METHOD(DRUID_NAME, getData);
 PHP_METHOD(DRUID_NAME, getDataByTpl);
 PHP_METHOD(DRUID_NAME, getDebugInfo);

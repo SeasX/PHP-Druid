@@ -142,8 +142,11 @@ const zend_function_entry druid_methods[] =
     PHP_ME(DRUID_NAME, __destruct,              NULL, ZEND_ACC_PUBLIC | ZEND_ACC_DTOR)
     PHP_ME(DRUID_NAME, getInstance,    	        druid_getinstance_arginfo, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
     PHP_ME(DRUID_NAME, debugWitch,    	        druid_debug_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, getDebugWitch,    	    NULL, ZEND_ACC_PUBLIC)
     PHP_ME(DRUID_NAME, setDruidHosts,    	    druid_setdruidhosts_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, getDruidHosts,    	    NULL, ZEND_ACC_PUBLIC)
     PHP_ME(DRUID_NAME, setTplPath,    	        druid_settplpath_arginfo, ZEND_ACC_PUBLIC)
+    PHP_ME(DRUID_NAME, getTplPath,    	        NULL, ZEND_ACC_PUBLIC)
     PHP_ME(DRUID_NAME, getData,    	            druid_getdata_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(DRUID_NAME, getDataByTpl,    	    druid_getdatabytpl_arginfo, ZEND_ACC_PUBLIC)
     PHP_ME(DRUID_NAME, getDebugInfo,    	    NULL, ZEND_ACC_PUBLIC)
@@ -411,6 +414,11 @@ PHP_METHOD(DRUID_NAME, debugWitch)
     RETURN_TRUE;
 }
 
+PHP_METHOD(DRUID_NAME, getDebugWitch)
+{
+    RETURN_BOOL(DRUID_G(debug));
+}
+
 PHP_METHOD(DRUID_NAME, setDruidHosts)
 {
     int argc = ZEND_NUM_ARGS();
@@ -433,6 +441,21 @@ PHP_METHOD(DRUID_NAME, setDruidHosts)
     RETURN_TRUE;
 }
 
+PHP_METHOD(DRUID_NAME, getDruidHosts)
+{
+    zval *hosts;
+    hosts = DRUID_ZEND_READ_PROPERTY(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_HOSTS));
+
+    if (hosts)
+    {
+        RETURN_ZVAL(hosts, 1, 0);
+    }
+    else
+    {
+        DRUID_RETURN_STRINGL(DRUID_G(host),strlen(DRUID_G(host)));
+    }
+}
+
 PHP_METHOD(DRUID_NAME, setTplPath)
 {
     char *tpl_path;
@@ -451,6 +474,13 @@ PHP_METHOD(DRUID_NAME, setTplPath)
     zend_update_property_string(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH), tpl_path TSRMLS_CC);
 
     RETURN_TRUE;
+}
+
+PHP_METHOD(DRUID_NAME, getTplPath)
+{
+    zval *tpl_path = DRUID_ZEND_READ_PROPERTY(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_TPL_PATH));
+
+    RETURN_ZVAL(tpl_path, 1, 0);
 }
 
 /*Just used by PHP7*/
