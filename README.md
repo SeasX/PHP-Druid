@@ -79,10 +79,9 @@ $ pecl install Druid
 
 ## PHP --re
 ```
-Extension [ <persistent> extension #30 Druid version 0.9.3 ] {
+Extension [ <persistent> extension #30 Druid version 1.0.0 ] {
 
   - Dependencies {
-    Dependency [ curl (Required) ]
     Dependency [ json (Required) ]
   }
 
@@ -116,7 +115,8 @@ Extension [ <persistent> extension #30 Druid version 0.9.3 ] {
   - Classes [1] {
     Class [ <internal:Druid> class Druid ] {
 
-      - Constants [2] {
+      - Constants [3] {
+        Constant [ public string DRUID_VERSION ] { 1.0.0 }
         Constant [ public string DRUID_CONTENT_TYPE ] { Content-Type:application/json }
         Constant [ public string DRUID_INSTANCE_DEFAULT ] { default }
       }
@@ -134,7 +134,8 @@ Extension [ <persistent> extension #30 Druid version 0.9.3 ] {
         }
       }
 
-      - Properties [7] {
+      - Properties [8] {
+        Property [ <default> protected $debug ]
         Property [ <default> protected $tpl_path ]
         Property [ <default> protected $response_debug_info ]
         Property [ <default> protected $response_code ]
@@ -144,7 +145,7 @@ Extension [ <persistent> extension #30 Druid version 0.9.3 ] {
         Property [ <default> protected $host_rand ]
       }
 
-      - Methods [11] {
+      - Methods [14] {
         Method [ <internal:Druid, ctor> private method __construct ] {
 
           - Parameters [0] {
@@ -170,6 +171,9 @@ Extension [ <persistent> extension #30 Druid version 0.9.3 ] {
           }
         }
 
+        Method [ <internal:Druid> public method getDebugWitch ] {
+        }
+
         Method [ <internal:Druid> public method setDruidHosts ] {
 
           - Parameters [1] {
@@ -177,11 +181,17 @@ Extension [ <persistent> extension #30 Druid version 0.9.3 ] {
           }
         }
 
+        Method [ <internal:Druid> public method getDruidHosts ] {
+        }
+
         Method [ <internal:Druid> public method setTplPath ] {
 
           - Parameters [1] {
             Parameter #0 [ <required> $tpl_path ]
           }
+        }
+
+        Method [ <internal:Druid> public method getTplPath ] {
         }
 
         Method [ <internal:Druid> public method getData ] {

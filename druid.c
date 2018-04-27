@@ -213,7 +213,7 @@ PHP_MINIT_FUNCTION(druid)
     zend_declare_class_constant_stringl(druid_ce,ZEND_STRL("DRUID_INSTANCE_DEFAULT"),ZEND_STRL(DRUID_INSTANCE_DEFAULT) TSRMLS_CC);
 
     zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_NAME), ZEND_ACC_STATIC | ZEND_ACC_PROTECTED TSRMLS_CC);
-
+    zend_declare_property_bool(druid_ce, ZEND_STRL(DRUID_PROPERTY_DEBUG), 0, ZEND_ACC_PROTECTED TSRMLS_CC);
     zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_PROPERTY_TPL_PATH), ZEND_ACC_PROTECTED TSRMLS_CC);
 
     zend_declare_property_null(druid_ce, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), ZEND_ACC_PROTECTED TSRMLS_CC);
@@ -351,6 +351,8 @@ initInstance:
     DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_NO), 0);
     zend_update_property_string(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_CURL_ERR_STR), "" TSRMLS_CC);
 
+    zend_update_property_bool(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_DEBUG), DRUID_G(debug) TSRMLS_CC);
+
     zend_update_property_string(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_TPL_PATH), DRUID_G(tpl_path) TSRMLS_CC);
 
     DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, instance, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE), 0);
@@ -409,14 +411,17 @@ PHP_METHOD(DRUID_NAME, debugWitch)
         RETURN_FALSE;
     }
 
-    DRUID_G(debug) = debug;
+    zend_update_property_bool(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_DEBUG), debug TSRMLS_CC);
 
     RETURN_TRUE;
 }
 
 PHP_METHOD(DRUID_NAME, getDebugWitch)
 {
-    RETURN_BOOL(DRUID_G(debug));
+    zval *debug = 0;
+    debug = DRUID_ZEND_READ_PROPERTY(druid_ce, getThis(), ZEND_STRL(DRUID_PROPERTY_DEBUG));
+
+    RETURN_ZVAL(debug, 1, 0);
 }
 
 PHP_METHOD(DRUID_NAME, setDruidHosts)

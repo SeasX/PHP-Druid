@@ -21,11 +21,13 @@
 
 #define DRUID_NAME "Druid"
 #define DRUID_CREDITS "neeke@php.net"
-#define PHP_DRUID_VERSION "0.9.4"
+#define PHP_DRUID_VERSION "1.0.0"
 
 #define DRUID_CONTENT_TYPE                  "Content-Type:application/json"
 #define DRUID_PROPERTY_CURL_ERR_NO          "_curl_error_no"
 #define DRUID_PROPERTY_CURL_ERR_STR         "_curl_error_str"
+
+#define DRUID_PROPERTY_DEBUG                "debug"
 
 #define DRUID_PROPERTY_RESPONSE_CODE        "response_code"
 #define DRUID_PROPERTY_RESPONSE_INFO        "response_debug_info"
