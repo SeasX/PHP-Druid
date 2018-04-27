@@ -205,6 +205,7 @@ PHP_MINIT_FUNCTION(druid)
     druid_ce = zend_register_internal_class_ex(&ce, NULL, NULL TSRMLS_CC);
 #endif
 
+    zend_declare_class_constant_stringl(druid_ce,ZEND_STRL("DRUID_VERSION"),ZEND_STRL(PHP_DRUID_VERSION) TSRMLS_CC);
     zend_declare_class_constant_stringl(druid_ce,ZEND_STRL("DRUID_CONTENT_TYPE"),ZEND_STRL(DRUID_CONTENT_TYPE) TSRMLS_CC);
     zend_declare_class_constant_stringl(druid_ce,ZEND_STRL("DRUID_INSTANCE_DEFAULT"),ZEND_STRL(DRUID_INSTANCE_DEFAULT) TSRMLS_CC);
 
