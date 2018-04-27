@@ -84,7 +84,6 @@ ZEND_DECLARE_MODULE_GLOBALS(druid)
 
 static zend_module_dep druid_deps[] =
 {
-    ZEND_MOD_REQUIRED("curl")
     ZEND_MOD_REQUIRED("json")
 #ifdef ZEND_MOD_END
     ZEND_MOD_END
@@ -859,6 +858,7 @@ char *druid_get_host(zval *druid TSRMLS_DC)
     int hash_sum = 0;
     int step = 0;
     zval *host_rand,*hosts;
+    char *host_result;
 #if PHP_VERSION_ID >= 70000
 
     zend_ulong num_key;
@@ -889,7 +889,9 @@ char *druid_get_host(zval *druid TSRMLS_DC)
 
             if (druid_php_rand(TSRMLS_C) == SUCCESS || step == hash_sum)
             {
-                return ZSTR_VAL(s);
+                host_result = estrdup(ZSTR_VAL(s));
+                zend_string_release(s);
+                return host_result;
             }
             else
             {
@@ -922,13 +924,16 @@ char *druid_get_host(zval *druid TSRMLS_DC)
 
             if (druid_php_rand(TSRMLS_C) == SUCCESS || step == hash_sum)
             {
-                return Z_STRVAL_PP(entry);
+                host_result = estrdup(Z_STRVAL_PP(entry));
+
+                return host_result;
             }
         }
     }
 #endif
 
-    return DRUID_G(host);
+    host_result = estrdup(DRUID_G(host));
+    return host_result;
 }
 
 int druid_get_debug_info(zval *druid,CURL *curl_handle,char *request_json TSRMLS_DC)
@@ -936,6 +941,7 @@ int druid_get_debug_info(zval *druid,CURL *curl_handle,char *request_json TSRMLS
     char   *s_code;
     long    l_code;
     double  d_code;
+    curl_version_info_data *info;
 
 #if PHP_VERSION_ID >= 70000
 
@@ -949,6 +955,10 @@ int druid_get_debug_info(zval *druid,CURL *curl_handle,char *request_json TSRMLS
     array_init(debug_info);
 
 #endif
+
+    info = curl_version_info(CURLVERSION_NOW);
+    DRUID_ADD_ASSOC_STRING_EX(debug_info, "version", 8, (char *)info->version);
+    DRUID_ADD_ASSOC_STRING_EX(debug_info,"ssl_version",12,(char *)info->ssl_version);
 
     if (curl_easy_getinfo(curl_handle, CURLINFO_EFFECTIVE_URL, &s_code) == CURLE_OK)
     {
@@ -1109,6 +1119,8 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
 
         curl_easy_cleanup(curl_handle);
         curl_global_cleanup();
+        efree(url);
+
         return FAILURE;
     }
 
@@ -1128,6 +1140,7 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
 
     curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
+    efree(url);
 
     return SUCCESS;
 }
