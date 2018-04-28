@@ -141,3 +141,4 @@ char *druid_file_get_contents_by_tpl(char *filename TSRMLS_DC);
  * vim600: noet sw=4 ts=4 fdm=marker
  * vim<600: noet sw=4 ts=4
  */
+

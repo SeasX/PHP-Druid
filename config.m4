@@ -73,14 +73,53 @@ if test "$PHP_druid" != "no"; then
       AC_MSG_ERROR(Please reinstall the libcurl distribution - easy.h should be in <curl-dir>/include/curl/)
     fi
 
+    CURL_CONFIG="curl-config"
+    AC_MSG_CHECKING(for cURL 7.10.5 or greater)
+
+    if ${CURL_DIR}/bin/curl-config --libs > /dev/null 2>&1; then
+        CURL_CONFIG=${CURL_DIR}/bin/curl-config
+    else
+        if ${CURL_DIR}/curl-config --libs > /dev/null 2>&1; then
+            CURL_CONFIG=${CURL_DIR}/curl-config
+        fi
+    fi
+
+    curl_version_full=`$CURL_CONFIG --version`
+    curl_version=`echo ${curl_version_full} | sed -e 's/libcurl //' | $AWK 'BEGIN { FS = "."; } { printf "%d", ($1 * 1000 + $2) * 1000 + $3;}'`
+    if test "$curl_version" -ge 7010005; then
+        AC_MSG_RESULT($curl_version_full)
+        CURL_LIBS=`$CURL_CONFIG --libs`
+    else
+        AC_MSG_ERROR(cURL version 7.10.5 or later is required to compile php with cURL support)
+    fi
+
     PHP_ADD_INCLUDE($CURL_DIR/include)
-    PHP_EVAL_LIBLINE($CURL_LIBS, druid_SHARED_LIBADD)
-    PHP_ADD_LIBRARY_WITH_PATH(curl, $CURL_DIR/$PHP_LIBDIR, druid_SHARED_LIBADD)
+    PHP_EVAL_LIBLINE($CURL_LIBS, DRUID_SHARED_LIBADD)
+    PHP_ADD_LIBRARY_WITH_PATH(curl, $CURL_DIR/$PHP_LIBDIR, DRUID_SHARED_LIBADD)
 
-    AC_SMARTAGENT_EPOLL()
+    PHP_CHECK_LIBRARY(curl,curl_easy_perform,
+    [
+        AC_DEFINE(HAVE_CURL,1,[ ])
+    ],[
+        AC_MSG_ERROR(There is something wrong. Please check config.log for more information.)
+    ],[
+        $CURL_LIBS -L$CURL_DIR/$PHP_LIBDIR
+    ])
 
+    PHP_CHECK_LIBRARY(curl,curl_version_info,
+    [
+        AC_DEFINE(HAVE_CURL_VERSION_INFO,1,[ ])
+    ],[],[
+        $CURL_LIBS -L$CURL_DIR/$PHP_LIBDIR
+    ])
 
-  PHP_SUBST(druid_SHARED_LIBADD)
+    PHP_CHECK_LIBRARY(curl,curl_easy_strerror,
+    [
+        AC_DEFINE(HAVE_CURL_EASY_STRERROR,1,[ ])
+    ],[],[
+        $CURL_LIBS -L$CURL_DIR/$PHP_LIBDIR
+    ])
 
-  PHP_NEW_EXTENSION(druid, druid.c, $ext_shared)
+    PHP_NEW_EXTENSION(druid, druid.c, $ext_shared)
+    PHP_SUBST(DRUID_SHARED_LIBADD)
 fi

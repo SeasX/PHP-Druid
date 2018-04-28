@@ -1180,3 +1180,4 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
 
     return SUCCESS;
 }
+
