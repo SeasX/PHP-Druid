@@ -16,11 +16,11 @@
         <email>neeke@php.net</email>
         <active>yes</active>
     </lead>
-    <date>2018-04-26</date>
-    <time>15:30:00</time>
+    <date>2018-04-28</date>
+    <time>13:30:00</time>
     <version>
-        <release>0.9.3</release>
-        <api>0.9.3</api>
+        <release>1.0.0</release>
+        <api>1.0.0</api>
     </version>
     <stability>
         <release>stable</release>
@@ -30,6 +30,9 @@
     <notes>
         - Merged PR #8 ZEND_ACC_CLONE have been removed in PHP 7.2
         - Fixed support PHP 7.2
+        - Add function getDebugWitch
+        - Add function getDruidHosts
+        - Add function getTplPath
     </notes>
     <contents>
         <dir name="/">
@@ -45,6 +48,14 @@
                 <file role="src" name="DruidCodeTips.php"/>
             </dir>
             <dir name="tests">
+                <file role="src" name="001.phpt"/>
+                <file role="src" name="002.phpt"/>
+                <file role="src" name="003.phpt"/>
+                <file role="src" name="004.phpt"/>
+                <file role="src" name="005.phpt"/>
+                <file role="src" name="006.phpt"/>
+                <file role="src" name="007.phpt"/>
+                <file role="src" name="008.phpt"/>
             </dir>
             <dir name="example">
                 <file role="src" name="demo.php"/>
