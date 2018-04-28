@@ -1093,6 +1093,7 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
     char *url;
     long    l_code;
     struct curl_slist  *slist = NULL;
+    zval *debug;
 
     char err_str[CURL_ERROR_SIZE + 1];
     struct druidCurlResult tmp;
@@ -1169,10 +1170,21 @@ int druid_get_contents(zval *druid, char *request_json, struct druidCurlResult *
         DRUID_ZEND_UPDATE_PROPERTY_LONG(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_CODE), l_code);
     }
 
-    if (DRUID_G(debug))
+    debug = DRUID_ZEND_READ_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_DEBUG));
+
+#if PHP_VERSION_ID >= 70000
+
+    if (Z_TYPE_P(debug) == IS_TRUE)
     {
         druid_get_debug_info(druid,curl_handle,request_json TSRMLS_CC);
     }
+#else
+
+    if (Z_LVAL_P(debug) == 1)
+    {
+        druid_get_debug_info(druid,curl_handle,request_json TSRMLS_CC);
+    }
+#endif
 
     curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
