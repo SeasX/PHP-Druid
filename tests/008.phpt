@@ -32,7 +32,16 @@ try {
 
 if (is_array($debugInfo))
 {
-    var_dump(array_key_exists("url",$debugInfo) && in_array($debugInfo["url"],$aHostsDefault));
+    $url = array_key_exists('url',$debugInfo) ? $debugInfo['url'] : '';
+    foreach ($aHostsDefault as $_url)
+    {
+        if (strstr($url,$_url)) {
+            var_dump(true);
+            break;
+        } else {
+            continue;
+        }
+    }
 }
 else
 {
