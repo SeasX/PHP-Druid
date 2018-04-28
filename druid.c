@@ -787,12 +787,11 @@ char *druid_file_get_contents_by_tpl(char *filename TSRMLS_DC)
     php_stream *stream;
     zval *zcontext = NULL;
     php_stream_context *context = NULL;
-
-#if PHP_VERSION_ID >= 70000
-    zend_string *contents;
-#else
     char *contents;
     int len;
+
+#if PHP_VERSION_ID >= 70000
+    zend_string *contents_raw;
 #endif
 
     context = php_stream_context_from_zval(zcontext, 0);
@@ -804,10 +803,12 @@ char *druid_file_get_contents_by_tpl(char *filename TSRMLS_DC)
     }
 
 #if PHP_VERSION_ID >= 70000
-    if ((contents = php_stream_copy_to_mem(stream, PHP_STREAM_COPY_ALL, 0)) != NULL)
+    if ((contents_raw = php_stream_copy_to_mem(stream, PHP_STREAM_COPY_ALL, 0)) != NULL)
     {
         php_stream_close(stream);
-        return ZSTR_VAL(contents);
+        contents = estrdup(ZSTR_VAL(contents_raw));
+        zend_string_release(contents_raw);
+        return contents;
 #else
     if ((len = php_stream_copy_to_mem(stream, &contents, PHP_STREAM_COPY_ALL, 0)) > 0)
     {
@@ -993,88 +994,88 @@ int druid_get_debug_info(zval *druid,CURL *curl_handle,char *request_json TSRMLS
 #endif
 
     info = curl_version_info(CURLVERSION_NOW);
-    DRUID_ADD_ASSOC_STRING_EX(debug_info, "version", 8, (char *)info->version);
-    DRUID_ADD_ASSOC_STRING_EX(debug_info,"ssl_version",12,(char *)info->ssl_version);
+    DRUID_ADD_ASSOC_STRING_EX(debug_info, "version", 7, (char *)info->version);
+    DRUID_ADD_ASSOC_STRING_EX(debug_info,"ssl_version",11,(char *)info->ssl_version);
 
     if (curl_easy_getinfo(curl_handle, CURLINFO_EFFECTIVE_URL, &s_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_STRING_EX(debug_info,"url",4,s_code);
+        DRUID_ADD_ASSOC_STRING_EX(debug_info,"url",3,s_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_HTTP_CODE, &l_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_LONG_EX(debug_info,"http_code",10,l_code);
+        DRUID_ADD_ASSOC_LONG_EX(debug_info,"http_code",9,l_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_HEADER_SIZE, &l_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_LONG_EX(debug_info,"header_size",12,l_code);
+        DRUID_ADD_ASSOC_LONG_EX(debug_info,"header_size",11,l_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_REQUEST_SIZE, &l_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_LONG_EX(debug_info,"request_size",13,l_code);
+        DRUID_ADD_ASSOC_LONG_EX(debug_info,"request_size",12,l_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_FILETIME, &l_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_LONG_EX(debug_info,"filetime",9,l_code);
+        DRUID_ADD_ASSOC_LONG_EX(debug_info,"filetime",8,l_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_SSL_VERIFYRESULT, &l_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_LONG_EX(debug_info,"ssl_verify_result",18,l_code);
+        DRUID_ADD_ASSOC_LONG_EX(debug_info,"ssl_verify_result",17,l_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_REDIRECT_COUNT, &l_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_LONG_EX(debug_info,"redirect_count",15,l_code);
+        DRUID_ADD_ASSOC_LONG_EX(debug_info,"redirect_count",14,l_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_TOTAL_TIME, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"total_time",11,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"total_time",10,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_NAMELOOKUP_TIME, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"namelookup_time",16,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"namelookup_time",15,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_CONNECT_TIME, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"connect_time",13,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"connect_time",12,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_PRETRANSFER_TIME, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"pretransfer_time",17,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"pretransfer_time",16,d_code);
     }
 
     if (curl_easy_getinfo(curl_handle, CURLINFO_SIZE_UPLOAD, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"size_upload",13,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"size_upload",12,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_SIZE_DOWNLOAD, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"size_download",14,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"size_download",13,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_SPEED_DOWNLOAD, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"speed_download",15,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"speed_download",14,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_SPEED_UPLOAD, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"speed_upload",13,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"speed_upload",12,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"download_content_length",24,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"download_content_length",23,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_CONTENT_LENGTH_UPLOAD, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"upload_content_length",22,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"upload_content_length",21,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_STARTTRANSFER_TIME, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"starttransfer_time",19,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"starttransfer_time",18,d_code);
     }
     if (curl_easy_getinfo(curl_handle, CURLINFO_REDIRECT_TIME, &d_code) == CURLE_OK)
     {
-        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"redirect_time",14,d_code);
+        DRUID_ADD_ASSOC_DOUBLE_EX(debug_info,"redirect_time",13,d_code);
     }
 
-    DRUID_ADD_ASSOC_STRING_EX(debug_info,"request_json",13,request_json);
+    DRUID_ADD_ASSOC_STRING_EX(debug_info,"request_json",12,request_json);
 #if PHP_VERSION_ID >= 70000
     DRUID_ZEND_UPDATE_PROPERTY(druid_ce, druid, ZEND_STRL(DRUID_PROPERTY_RESPONSE_INFO), &debug_info);
 #else
