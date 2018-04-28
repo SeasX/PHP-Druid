@@ -11,13 +11,13 @@ try {
 
     $druid = Druid::getInstance(Druid::DRUID_INSTANCE_DEFAULT);
 
-    $array = array("bbbbb","cccccc","dddddd","eeeeee");
+    $array = array("bbbbb", "cccccc", "dddddd", "eeeeee");
 
     $druid->setDruidHosts($array);
 
     var_dump($druid);
 
-    var_dump($druid->getData($request_json, array('dataSource'=>'aaa')));
+    var_dump($druid->getData($request_json, array('dataSource' => 'aaa')));
 
     var_dump($druid);
 
@@ -25,5 +25,5 @@ try {
 } catch (Exception $e) {
     echo '<pre>';
     var_dump($druid->getDebugInfo());
-    exit(var_dump($e->getCode(),$e->getMessage()));
+    exit(var_dump($e->getCode(), $e->getMessage()));
 }

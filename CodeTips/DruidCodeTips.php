@@ -11,14 +11,14 @@ class Druid
     /**
      * @var Druid
      */
-    static private $Druid = NULL;
+    static private $Druid = null;
 
     /**
      * @return Druid
      */
     static public function getInstance($instance_name)
     {
-        if (self::$Druid == NULL) {
+        if (self::$Druid == null) {
             self::$Druid = array();
         }
 
@@ -29,6 +29,9 @@ class Druid
         return self::$Druid[$instance_name];
     }
 
+    /**
+     * Druid constructor.
+     */
     private function __construct()
     {
 
@@ -54,31 +57,85 @@ class Druid
 
     }
 
+    /**
+     * @param $bool
+     *
+     * @return bool
+     */
     public function debugWitch($bool)
     {
-        return TRUE;
+        return true;
     }
 
+    /**
+     * @return bool
+     */
+    public function getDebugWitch()
+    {
+        return true;
+    }
+
+    /**
+     * @param array $array
+     *
+     * @return bool
+     */
     public function setDruidHosts(array $array)
     {
-        return TRUE;
+        return true;
     }
 
+    /**
+     * @return array
+     */
+    public function getDruidHosts()
+    {
+        return array();
+    }
+
+    /**
+     * @param $tpl_path
+     *
+     * @return bool
+     */
     public function setTplPath($tpl_path)
     {
-        return TRUE;
+        return true;
     }
 
+    /**
+     * @return string
+     */
+    public function getTplPath()
+    {
+        return '';
+    }
+
+    /**
+     * @param       $request_json
+     * @param array $array
+     *
+     * @return array
+     */
     public function getData($request_json, array $array = array())
     {
         return array();
     }
 
+    /**
+     * @param       $request_json_tpl
+     * @param array $array
+     *
+     * @return array
+     */
     public function getDataByTpl($request_json_tpl, array $array = array())
     {
         return array();
     }
 
+    /**
+     * @return array
+     */
     public function getDebugInfo()
     {
         return array();

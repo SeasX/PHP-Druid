@@ -6,8 +6,8 @@
 
 try {
 
-    $Druid_1 = Druid::getInstance();
-    $Druid_1->debugWitch(TRUE);
+    $Druid_1 = Druid::getInstance(Druid::DRUID_INSTANCE_DEFAULT);
+    $Druid_1->debugWitch(true);
 
     /**
      * you can also use default host with druid.host in php.ini/druid.ini
@@ -33,7 +33,7 @@ try {
     $result_2 = $Druid_2->getData(file_get_contents(__DIR__ . '/tpl/request_full_demo.json'));
 
     var_dump($result_1, $result_2);
-    var_dump($Druid_1,$Druid_2);
+    var_dump($Druid_1, $Druid_2);
 } catch (Exception $e) {
     var_dump($e->getCode(), $e->getMessage(), $Druid_1->getDebugInfo(), $Druid_2->getDebugInfo());
 }
