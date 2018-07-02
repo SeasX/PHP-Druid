@@ -15,10 +15,9 @@ AC_DEFUN([AC_SMARTAGENT_EPOLL],
 [
 	AC_MSG_CHECKING([for epoll])
 
-	AC_TRY_COMPILE(
-	[
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 		#include <sys/epoll.h>
-	], [
+	]], [[
 		int epollfd;
 		struct epoll_event e;
 
@@ -38,10 +37,10 @@ AC_DEFUN([AC_SMARTAGENT_EPOLL],
 		if (epoll_wait(epollfd, &e, 1, 1) < 0) {
 			return 1;
 		}
-	], [
+	]])],[
 		AC_DEFINE([HAVE_EPOLL], 1, [do we have epoll?])
 		AC_MSG_RESULT([yes])
-	], [
+	],[
 		AC_MSG_RESULT([no])
 	])
 ])
