@@ -1,4 +1,3 @@
-dnl $Id$
 dnl config.m4 for extension druid
 
 dnl If your extension references something external, use with:
